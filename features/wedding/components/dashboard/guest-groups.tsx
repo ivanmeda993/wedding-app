@@ -93,14 +93,16 @@ export function GuestGroups({
                 >
                   <div className="w-full">
                     <CardHeader
-                      className="cursor-pointer"
+                      className="cursor-pointer p-2"
                       onClick={() => toggleGroup(group.id)}
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <UsersRound className="w-5 h-5" />
-                          <CardTitle className="flex items-center gap-2">
-                            {group.name}
+                      <div className="flex md:items-center justify-between">
+                        <div className="flex items-center gap-1 md:gap-2">
+                          <CardTitle className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
+                            <div className="flex items-center gap-1 text-sm md:text-md">
+                              <UsersRound className="w-5 h-5" />
+                              {group.name}
+                            </div>
                             <span className="text-sm font-normal text-muted-foreground">
                               (
                               {group.side === "bride"
@@ -128,7 +130,7 @@ export function GuestGroups({
                   </div>
                   <CollapsibleContent>
                     <CardContent>
-                      <div className="space-y-4">
+                      <div className="space-y-2 md:space-y-4">
                         {groupGuests.map((guest) => (
                           <GuestCard key={guest.id} guest={guest} />
                         ))}

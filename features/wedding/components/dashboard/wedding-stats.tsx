@@ -1,24 +1,39 @@
-'use client';
+"use client";
 
-import { useWeddingStats } from '../../hooks/queries';
-import { Users, Wallet, UserCheck, UserMinus } from 'lucide-react';
+import { cn } from "@/lib/utils";
+import { useWeddingStats } from "../../hooks/queries";
+import { Users, Wallet, UserCheck, UserMinus } from "lucide-react";
 
 interface StatCardProps {
   title: string;
   value: string | number;
   icon: React.ReactNode;
   description?: string;
+  className?: string;
 }
 
-function StatCard({ title, value, icon, description }: StatCardProps) {
+function StatCard({
+  title,
+  value,
+  icon,
+  description,
+  className,
+}: StatCardProps) {
   return (
-    <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-card to-card/50 p-4 sm:p-6 shadow-md border border-border/50">
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-xl bg-gradient-to-br from-card to-card/50 p-4 sm:p-6 shadow-md border border-border/50",
+        className
+      )}
+    >
       <div className="flex items-center gap-4">
         <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
           {icon}
         </div>
         <div>
-          <p className="text-xs sm:text-sm font-medium text-muted-foreground">{title}</p>
+          <p className="text-xs sm:text-sm font-medium text-muted-foreground">
+            {title}
+          </p>
           <p className="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
             {value}
           </p>
@@ -41,6 +56,7 @@ export function WeddingStats() {
         value={stats.totalGuests}
         icon={<Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />}
         description={`${stats.totalAdults} odraslih, ${stats.totalChildren} dece`}
+        className="col-span-2 md:col-span-1"
       />
       <StatCard
         title="Odrasli"
@@ -54,8 +70,9 @@ export function WeddingStats() {
       />
       <StatCard
         title="Ukupan trošak"
-        value={`€${stats.totalCost.toLocaleString('de-DE')}`}
+        value={`€${stats.totalCost.toLocaleString("de-DE")}`}
         icon={<Wallet className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />}
+        className="col-span-2 md:col-span-1"
       />
     </div>
   );
