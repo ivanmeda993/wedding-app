@@ -1,13 +1,21 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useShareWedding } from '../../hooks/mutations';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Check, Copy, Mail } from 'lucide-react';
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useShareWedding, useDeleteCollaborator } from "../../hooks/mutations";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Check, Copy, Mail, UserX } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useCollaborators, useWeddingDetails } from "../../hooks/queries";
 
 export function ShareWeddingDialog({
   open,
@@ -16,30 +24,55 @@ export function ShareWeddingDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [copied, setCopied] = useState(false);
   const shareWedding = useShareWedding();
+  const deleteCollaborator = useDeleteCollaborator();
+  const { toast } = useToast();
+  const { data: collaborators = [], isLoading } = useCollaborators();
+  const { data: weddingDetails } = useWeddingDetails();
 
   const handleShare = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (email.trim()) {
       shareWedding.mutate(
         { email: email.trim() },
         {
           onSuccess: () => {
-            setEmail('');
+            setEmail("");
             onOpenChange(false);
+            toast({
+              title: "Uspešno deljenje",
+              description: `Pristup je uspešno podeljen sa ${email}`,
+            });
           },
         }
       );
     }
   };
 
+  const inviteLink = weddingDetails?.inviteCode
+    ? `${window.location.origin}/invite/${weddingDetails.inviteCode}`
+    : "";
+
   const copyInviteLink = () => {
-    // U produkciji bi ovo bio stvarni link za pozivnicu
-    navigator.clipboard.writeText(`${window.location.origin}/invite/[code]`);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (inviteLink) {
+      navigator.clipboard.writeText(inviteLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleDeleteCollaborator = (id: string, email: string) => {
+    deleteCollaborator.mutate(id, {
+      onSuccess: () => {
+        toast({
+          title: "Uspešno brisanje",
+          description: `Pristup je uspešno ukinut za ${email}`,
+        });
+      },
+    });
   };
 
   return (
@@ -48,7 +81,8 @@ export function ShareWeddingDialog({
         <DialogHeader>
           <DialogTitle>Podeli pristup venčanju</DialogTitle>
           <DialogDescription>
-            Pošalji pozivnicu mladoj ili drugim organizatorima da pristupe evidenciji gostiju.
+            Pošalji pozivnicu mladoj ili drugim organizatorima da pristupe
+            evidenciji gostiju.
           </DialogDescription>
         </DialogHeader>
 
@@ -76,7 +110,9 @@ export function ShareWeddingDialog({
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Ili</span>
+              <span className="bg-background px-2 text-muted-foreground">
+                Ili
+              </span>
             </div>
           </div>
 
@@ -85,14 +121,16 @@ export function ShareWeddingDialog({
             <div className="flex gap-2">
               <Input
                 readOnly
-                value={`${window.location.origin}/invite/[code]`}
+                value={inviteLink}
                 className="flex-1"
+                placeholder="Učitavanje..."
               />
               <Button
                 type="button"
                 variant="outline"
                 onClick={copyInviteLink}
                 className={copied ? "text-green-600" : ""}
+                disabled={!inviteLink}
               >
                 {copied ? (
                   <Check className="w-4 h-4" />
@@ -110,6 +148,54 @@ export function ShareWeddingDialog({
               </AlertDescription>
             </Alert>
           )}
+
+          {/* Lista kolaboratora */}
+          <div className="space-y-2 pt-4">
+            <Label>Kolaboratori</Label>
+            {isLoading ? (
+              <div className="text-sm text-muted-foreground">Učitavanje...</div>
+            ) : collaborators.length === 0 ? (
+              <div className="text-sm text-muted-foreground">
+                Još uvek nema kolaboratora
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {collaborators.map((collaborator) => (
+                  <div
+                    key={collaborator.id}
+                    className="flex items-center justify-between p-2 rounded-lg border"
+                  >
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">
+                        {collaborator.email}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        Dodat{" "}
+                        {new Date(collaborator.created_at).toLocaleDateString(
+                          "sr-RS"
+                        )}
+                      </span>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() =>
+                        handleDeleteCollaborator(
+                          collaborator.id,
+                          collaborator.email
+                        )
+                      }
+                      disabled={deleteCollaborator.isPending}
+                    >
+                      <UserX className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </form>
       </DialogContent>
     </Dialog>

@@ -74,10 +74,23 @@ export function GuestList({
               <Users2 className="w-4 h-4 sm:w-5 sm:h-5" />
               <CardTitle className="flex items-center gap-2 text-sm sm:text-lg">
                 Ostali gosti
-                <span className="text-xs sm:text-sm font-normal text-muted-foreground">
-                  ({ungroupedGuests.length}{" "}
-                  {ungroupedGuests.length === 1 ? "gost" : "gosta"})
-                </span>
+                {(() => {
+                  const totalGuests = ungroupedGuests.reduce(
+                    (acc, guest) => acc + 1 + guest.companions.length,
+                    0
+                  );
+                  return (
+                    <span className="text-xs sm:text-sm font-normal text-muted-foreground">
+                      ({totalGuests}{" "}
+                      {totalGuests === 1
+                        ? "gost"
+                        : totalGuests < 5
+                        ? "gosta"
+                        : "gostiju"}
+                      )
+                    </span>
+                  );
+                })()}
               </CardTitle>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
@@ -110,11 +123,12 @@ export function GuestList({
         </CardHeader>
         <CollapsibleContent>
           <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
-            <div className="space-y-4 sm:space-y-8">
+            <div className="space-y-2 md:space-y-3">
               {selectedSide !== "groom" && brideGuests.length > 0 && (
                 <Collapsible open={openSections.includes("bride")}>
+                  {/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
                   <div
-                    className="flex items-center justify-between cursor-pointer py-2"
+                    className="flex items-center justify-between cursor-pointer "
                     onClick={() => toggleSection("bride")}
                   >
                     <h3 className="text-sm sm:text-lg font-medium">
@@ -139,8 +153,9 @@ export function GuestList({
 
               {selectedSide !== "bride" && groomGuests.length > 0 && (
                 <Collapsible open={openSections.includes("groom")}>
+                  {/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
                   <div
-                    className="flex items-center justify-between cursor-pointer py-2"
+                    className="flex items-center justify-between cursor-pointer "
                     onClick={() => toggleSection("groom")}
                   >
                     <h3 className="text-sm sm:text-lg font-medium">

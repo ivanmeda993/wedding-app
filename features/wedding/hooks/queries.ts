@@ -1,7 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
-import { api } from '../lib/api';
-import { queryKeys } from './query-keys';
-import type { GroupWithStats } from '../types';
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../lib/api";
+import { queryKeys } from "./query-keys";
+import type { GroupWithStats, Collaborator } from "../types";
 
 export function useWeddingDetails() {
   return useQuery({
@@ -31,6 +31,13 @@ export function useGroupsWithStats() {
   });
 }
 
+export function useCollaborators() {
+  return useQuery<Collaborator[]>({
+    queryKey: queryKeys.collaborators,
+    queryFn: api.getCollaborators,
+  });
+}
+
 export function useWeddingStats() {
   const { data: guests = [] } = useGuests();
   const { data: weddingDetails } = useWeddingDetails();
@@ -47,20 +54,23 @@ export function useWeddingStats() {
 
   // Count primary guests (they are always adults)
   const primaryGuestsCount = guests.length;
-  
+
   // Count all companions
-  const companionStats = guests.reduce((acc, guest) => {
-    const adultCompanions = guest.companions.filter(c => c.isAdult).length;
-    const childCompanions = guest.companions.filter(c => !c.isAdult).length;
-    return {
-      adults: acc.adults + adultCompanions,
-      children: acc.children + childCompanions
-    };
-  }, { adults: 0, children: 0 });
+  const companionStats = guests.reduce(
+    (acc, guest) => {
+      const adultCompanions = guest.companions.filter((c) => c.isAdult).length;
+      const childCompanions = guest.companions.filter((c) => !c.isAdult).length;
+      return {
+        adults: acc.adults + adultCompanions,
+        children: acc.children + childCompanions,
+      };
+    },
+    { adults: 0, children: 0 }
+  );
 
   // Calculate total gift amount
   const totalGiftAmount = guests.reduce((acc, guest) => {
-    if (guest.gift?.type === 'money' && guest.gift.amount) {
+    if (guest.gift?.type === "money" && guest.gift.amount) {
       return acc + guest.gift.amount;
     }
     return acc;

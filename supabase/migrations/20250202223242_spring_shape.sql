@@ -13,18 +13,14 @@
     - Prevents unauthorized access
 */
 
--- Drop all existing policies
-DO $$ 
-BEGIN
-  -- Drop all policies from profiles table
-  FOR pol IN (
-    SELECT policyname 
-    FROM pg_policies 
-    WHERE tablename = 'profiles'
-  ) LOOP
-    EXECUTE format('DROP POLICY IF EXISTS %I ON profiles', pol.policyname);
-  END LOOP;
-END $$;
+-- Drop existing policies
+DROP POLICY IF EXISTS "profiles_select" ON profiles;
+DROP POLICY IF EXISTS "profiles_insert" ON profiles;
+DROP POLICY IF EXISTS "profiles_update" ON profiles;
+DROP POLICY IF EXISTS "allow_read" ON profiles;
+DROP POLICY IF EXISTS "allow_insert" ON profiles;
+DROP POLICY IF EXISTS "allow_update" ON profiles;
+DROP POLICY IF EXISTS "Enable profile management" ON profiles;
 
 -- Create final set of policies
 CREATE POLICY "Enable profile management"

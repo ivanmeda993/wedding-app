@@ -11,6 +11,12 @@ export async function middleware(request: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
+  // Dozvoli pristup stranicama za pozivnice i postavljanje šifre
+  const publicPaths = ["/invite", "/set-password"];
+  if (publicPaths.some((path) => request.nextUrl.pathname.startsWith(path))) {
+    return response;
+  }
+
   // Ako korisnik nije autentificiran i pokušava pristupiti zaštićenoj ruti
   if (!session) {
     // Preusmjeri na login stranicu
