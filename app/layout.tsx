@@ -1,5 +1,5 @@
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Providers } from "./providers";
 import { AuthProvider } from "@/features/auth/providers/auth-provider";
@@ -20,6 +20,15 @@ const inter = Inter({ subsets: ["latin"] });
  *
  * @layout
  */
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  // Also supported but less commonly used
+  // interactiveWidget: 'resizes-visual',
+};
 
 export const metadata: Metadata = {
   title: "Evidencija gostiju za venčanje",
