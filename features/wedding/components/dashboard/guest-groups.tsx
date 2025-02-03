@@ -1,37 +1,41 @@
-'use client';
+"use client";
 
-import { useGroupsWithStats, useGuests } from '../../hooks/queries';
-import { GuestCard } from './guest-card';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { UsersRound, ChevronDown } from 'lucide-react';
-import type { Side, AttendanceStatus } from '../../types';
-import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
-import { useState } from 'react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { GroupActions } from './group-actions';
+import { useGroupsWithStats, useGuests } from "../../hooks/queries";
+import { GuestCard } from "./guest-card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { UsersRound, ChevronDown } from "lucide-react";
+import type { Side, AttendanceStatus, Guest } from "../../types";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { GroupActions } from "./group-actions";
 
 interface GuestGroupsProps {
-  selectedSide: Side | 'all';
-  selectedStatus: AttendanceStatus | 'all';
+  selectedSide: Side | "all";
+  selectedStatus: AttendanceStatus | "all";
   searchQuery: string;
 }
 
-export function GuestGroups({ selectedSide, selectedStatus, searchQuery }: GuestGroupsProps) {
+export function GuestGroups({
+  selectedSide,
+  selectedStatus,
+  searchQuery,
+}: GuestGroupsProps) {
   const { data: groupsWithStats = [] } = useGroupsWithStats();
   const { data: guests = [] } = useGuests();
   const [openGroups, setOpenGroups] = useState<string[]>([]);
 
   const toggleGroup = (groupId: string) => {
-    setOpenGroups(current =>
+    setOpenGroups((current) =>
       current.includes(groupId)
-        ? current.filter(id => id !== groupId)
+        ? current.filter((id) => id !== groupId)
         : [...current, groupId]
     );
   };
 
   const expandAll = () => {
-    const allGroupIds = groupsWithStats.map(group => group.id);
+    const allGroupIds = groupsWithStats.map((group) => group.id);
     setOpenGroups(allGroupIds);
   };
 
@@ -39,24 +43,33 @@ export function GuestGroups({ selectedSide, selectedStatus, searchQuery }: Guest
     setOpenGroups([]);
   };
 
-  const filteredGroups = groupsWithStats.filter(group => 
-    selectedSide === 'all' ? true : group.side === selectedSide
+  const filteredGroups = groupsWithStats.filter((group) =>
+    selectedSide === "all" ? true : group.side === selectedSide
   );
 
-  const brideGroups = filteredGroups.filter(group => group.side === 'bride');
-  const groomGroups = filteredGroups.filter(group => group.side === 'groom');
+  const brideGroups = filteredGroups.filter((group) => group.side === "bride");
+  const groomGroups = filteredGroups.filter((group) => group.side === "groom");
 
-  const filterGuests = (guests: typeof store.guests) => {
-    return guests.filter(guest => {
+  const filterGuests = (guests: Guest[]) => {
+    return guests.filter((guest) => {
       const matchesSearch = searchQuery
-        ? `${guest.firstName} ${guest.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
+        ? `${guest.firstName} ${guest.lastName}`
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
         : true;
-      const matchesStatus = selectedStatus === 'all' ? true : guest.attendance === selectedStatus;
+      const matchesStatus =
+        selectedStatus === "all" ? true : guest.attendance === selectedStatus;
       return matchesSearch && matchesStatus;
     });
   };
 
-  const GroupSection = ({ groups, title }: { groups: typeof brideGroups, title: string }) => {
+  const GroupSection = ({
+    groups,
+    title,
+  }: {
+    groups: typeof brideGroups;
+    title: string;
+  }) => {
     if (groups.length === 0) return null;
 
     return (
@@ -64,36 +77,51 @@ export function GuestGroups({ selectedSide, selectedStatus, searchQuery }: Guest
         <h2 className="text-xl font-semibold">{title}</h2>
         <div className="space-y-4">
           {groups.map((group) => {
-            const groupGuests = filterGuests(guests.filter(guest => guest.groupId === group.id));
+            const groupGuests = filterGuests(
+              guests.filter((guest) => guest.groupId === group.id)
+            );
             const isOpen = openGroups.includes(group.id);
             const totalGuests = group.stats.totalGuests;
-            
+
             if (groupGuests.length === 0) return null;
 
             return (
               <Card key={group.id}>
-                <Collapsible open={isOpen} onOpenChange={() => toggleGroup(group.id)}>
+                <Collapsible
+                  open={isOpen}
+                  onOpenChange={() => toggleGroup(group.id)}
+                >
                   <div className="w-full">
-                    <CardHeader className="cursor-pointer" onClick={() => toggleGroup(group.id)}>
+                    <CardHeader
+                      className="cursor-pointer"
+                      onClick={() => toggleGroup(group.id)}
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <UsersRound className="w-5 h-5" />
                           <CardTitle className="flex items-center gap-2">
                             {group.name}
                             <span className="text-sm font-normal text-muted-foreground">
-                              ({group.side === 'bride' ? 'Mladina strana' : 'Mladoženjina strana'})
+                              (
+                              {group.side === "bride"
+                                ? "Mladina strana"
+                                : "Mladoženjina strana"}
+                              )
                             </span>
                             <span className="text-sm font-normal text-muted-foreground">
-                              • {totalGuests} {totalGuests === 1 ? 'gost' : 'gosta'}
+                              • {totalGuests}{" "}
+                              {totalGuests === 1 ? "gost" : "gosta"}
                             </span>
                           </CardTitle>
                         </div>
                         <div className="flex items-center gap-2">
                           <GroupActions group={group} />
-                          <ChevronDown className={cn(
-                            "h-4 w-4 text-muted-foreground transition-transform",
-                            isOpen && "transform rotate-180"
-                          )} />
+                          <ChevronDown
+                            className={cn(
+                              "h-4 w-4 text-muted-foreground transition-transform",
+                              isOpen && "transform rotate-180"
+                            )}
+                          />
                         </div>
                       </div>
                     </CardHeader>
@@ -143,8 +171,12 @@ export function GuestGroups({ selectedSide, selectedStatus, searchQuery }: Guest
           Skupi sve grupe
         </Button>
       </div>
-      {selectedSide !== 'groom' && <GroupSection groups={brideGroups} title="Mladina strana" />}
-      {selectedSide !== 'bride' && <GroupSection groups={groomGroups} title="Mladoženjina strana" />}
+      {selectedSide !== "groom" && (
+        <GroupSection groups={brideGroups} title="Mladina strana" />
+      )}
+      {selectedSide !== "bride" && (
+        <GroupSection groups={groomGroups} title="Mladoženjina strana" />
+      )}
     </div>
   );
 }

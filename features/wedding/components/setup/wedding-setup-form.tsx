@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { Button } from '@/components/ui/button';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -11,13 +11,13 @@ import {
   FormLabel,
   FormMessage,
   FormDescription,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useState } from 'react';
-import { weddingSetupSchema } from '../../schemas';
-import { useSetupWedding } from '../../hooks/mutations';
-import type { WeddingSetupFormData } from '../../types';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useState } from "react";
+import { weddingSetupSchema } from "../../schemas";
+import { useSetupWedding } from "../../hooks/mutations";
+import type { WeddingSetupFormData } from "../../types";
 
 export function WeddingSetupForm() {
   const [error, setError] = useState<string | null>(null);
@@ -26,15 +26,15 @@ export function WeddingSetupForm() {
   const form = useForm<WeddingSetupFormData>({
     resolver: zodResolver(weddingSetupSchema),
     defaultValues: {
-      brideName: '',
-      groomName: '',
+      brideName: "",
+      groomName: "",
       venue: {
-        name: '',
-        address: '',
-        hall: '',
+        name: "",
+        address: "",
+        hall: "",
       },
-      date: '',
-      pricePerPerson: '',
+      date: "",
+      pricePerPerson: 0,
     },
   });
 
@@ -43,7 +43,11 @@ export function WeddingSetupForm() {
       setError(null);
       await setupWedding(values);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Došlo je do greške pri kreiranju venčanja');
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Došlo je do greške pri kreiranju venčanja"
+      );
     }
   }
 
@@ -58,7 +62,11 @@ export function WeddingSetupForm() {
               <FormItem>
                 <FormLabel>Ime mlade</FormLabel>
                 <FormControl>
-                  <Input placeholder="Ana" {...field} className="bg-background/50" />
+                  <Input
+                    placeholder="Ana"
+                    {...field}
+                    className="bg-background/50"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -71,7 +79,11 @@ export function WeddingSetupForm() {
               <FormItem>
                 <FormLabel>Ime mladoženje</FormLabel>
                 <FormControl>
-                  <Input placeholder="Marko" {...field} className="bg-background/50" />
+                  <Input
+                    placeholder="Marko"
+                    {...field}
+                    className="bg-background/50"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -89,10 +101,15 @@ export function WeddingSetupForm() {
                 <FormItem>
                   <FormLabel>Naziv lokacije</FormLabel>
                   <FormControl>
-                    <Input placeholder="Hotel Grand" {...field} className="bg-background/50" />
+                    <Input
+                      placeholder="Hotel Grand"
+                      {...field}
+                      className="bg-background/50"
+                    />
                   </FormControl>
                   <FormDescription>
-                    Unesite naziv hotela ili restorana gde će se održati venčanje
+                    Unesite naziv hotela ili restorana gde će se održati
+                    venčanje
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -106,7 +123,11 @@ export function WeddingSetupForm() {
                 <FormItem>
                   <FormLabel>Adresa</FormLabel>
                   <FormControl>
-                    <Input placeholder="Bulevar oslobođenja 1" {...field} className="bg-background/50" />
+                    <Input
+                      placeholder="Bulevar oslobođenja 1"
+                      {...field}
+                      className="bg-background/50"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -120,7 +141,11 @@ export function WeddingSetupForm() {
                 <FormItem>
                   <FormLabel>Sala/Restoran</FormLabel>
                   <FormControl>
-                    <Input placeholder="Kristalna dvorana" {...field} className="bg-background/50" />
+                    <Input
+                      placeholder="Kristalna dvorana"
+                      {...field}
+                      className="bg-background/50"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -151,10 +176,10 @@ export function WeddingSetupForm() {
               <FormItem>
                 <FormLabel>Cena po osobi (EUR)</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="50" 
-                    {...field} 
+                  <Input
+                    type="number"
+                    placeholder="50"
+                    {...field}
                     className="bg-background/50"
                   />
                 </FormControl>
@@ -173,12 +198,12 @@ export function WeddingSetupForm() {
           </Alert>
         )}
 
-        <Button 
-          type="submit" 
-          className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70" 
+        <Button
+          type="submit"
+          className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
           disabled={isPending}
         >
-          {isPending ? 'Učitavanje...' : 'Započni evidenciju'}
+          {isPending ? "Učitavanje..." : "Započni evidenciju"}
         </Button>
       </form>
     </Form>

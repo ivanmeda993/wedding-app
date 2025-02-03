@@ -1,11 +1,16 @@
-'use client';
+"use client";
 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
@@ -13,26 +18,32 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { PlusCircle, X } from 'lucide-react';
-import { useEffect } from 'react';
-import { useGroups } from '../../hooks/queries';
-import { useUpdateGuest } from '../../hooks/mutations';
-import type { Guest } from '../../types';
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { PlusCircle, X } from "lucide-react";
+import { useEffect } from "react";
+import { useGroups } from "../../hooks/queries";
+import { useUpdateGuest } from "../../hooks/mutations";
+import type { Guest } from "../../types";
 
 const companionSchema = z.object({
-  firstName: z.string().min(2, 'Ime mora imati bar 2 karaktera'),
+  firstName: z.string().min(2, "Ime mora imati bar 2 karaktera"),
   lastName: z.string().optional(),
   isAdult: z.boolean(),
 });
 
 const guestSchema = z.object({
-  firstName: z.string().min(2, 'Ime mora imati bar 2 karaktera'),
-  lastName: z.string().min(2, 'Prezime mora imati bar 2 karaktera'),
+  firstName: z.string().min(2, "Ime mora imati bar 2 karaktera"),
+  lastName: z.string().min(2, "Prezime mora imati bar 2 karaktera"),
   phone: z.string().optional(),
-  attendance: z.enum(['yes', 'no', 'pending']),
-  side: z.enum(['bride', 'groom']),
+  attendance: z.enum(["yes", "no", "pending"]),
+  side: z.enum(["bride", "groom"]),
   groupId: z.string().optional(),
   gift: z.string().optional(),
   notes: z.string().optional(),
@@ -58,49 +69,61 @@ export function EditGuestDialog({
     defaultValues: {
       firstName: guest.firstName,
       lastName: guest.lastName,
-      phone: guest.phone || '',
+      phone: guest.phone || "",
       attendance: guest.attendance,
       side: guest.side,
       groupId: guest.groupId || undefined,
-      gift: guest.gift || '',
-      notes: guest.notes || '',
-      companions: guest.companions.map(c => ({
+      gift: guest.gift?.description || undefined,
+      notes: guest.notes || "",
+      companions: guest.companions.map((c) => ({
         firstName: c.firstName,
-        lastName: c.lastName || '',
+        lastName: c.lastName || "",
         isAdult: c.isAdult,
       })),
     },
   });
 
-  const selectedSide = form.watch('side');
-  const companions = form.watch('companions');
+  const selectedSide = form.watch("side");
+  const companions = form.watch("companions");
 
   // Reset groupId when side changes
   useEffect(() => {
-    form.setValue('groupId', undefined);
-  }, [selectedSide, form]);
+    form.setValue("groupId", undefined);
+  }, [form]);
 
-  const filteredGroups = groups.filter(group => group.side === selectedSide);
+  const filteredGroups = groups.filter((group) => group.side === selectedSide);
 
   const addCompanion = () => {
-    const currentCompanions = form.getValues('companions');
-    form.setValue('companions', [
+    const currentCompanions = form.getValues("companions");
+    form.setValue("companions", [
       ...currentCompanions,
-      { firstName: '', lastName: '', isAdult: true },
+      { firstName: "", lastName: "", isAdult: true },
     ]);
   };
 
   const removeCompanion = (index: number) => {
-    const currentCompanions = form.getValues('companions');
+    const currentCompanions = form.getValues("companions");
     form.setValue(
-      'companions',
+      "companions",
       currentCompanions.filter((_, i) => i !== index)
     );
   };
 
   const onSubmit = (values: GuestFormValues) => {
     updateGuest.mutate(
-      { id: guest.id, guest: values },
+      {
+        id: guest.id,
+        guest: {
+          ...values,
+          gift: values.gift
+            ? { type: "other", description: values.gift }
+            : undefined,
+          companions: values.companions.map((c, i) => ({
+            ...c,
+            id: guest.companions[i]?.id || `temp-${i}`,
+          })),
+        },
+      },
       {
         onSuccess: () => {
           onOpenChange(false);
@@ -153,7 +176,10 @@ export function EditGuestDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Strana</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Izaberi stranu" />
@@ -174,7 +200,10 @@ export function EditGuestDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status dolaska</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Izaberi status" />
@@ -263,14 +292,22 @@ export function EditGuestDialog({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-medium">Pratioci</h3>
-                <Button type="button" variant="outline" size="sm" onClick={addCompanion}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addCompanion}
+                >
                   <PlusCircle className="w-4 h-4 mr-2" />
                   Dodaj pratioca
                 </Button>
               </div>
 
               {companions.map((_, index) => (
-                <div key={index} className="space-y-4 p-4 border rounded-lg relative">
+                <div
+                  key={index}
+                  className="space-y-4 p-4 border rounded-lg relative"
+                >
                   <Button
                     type="button"
                     variant="ghost"
@@ -317,8 +354,10 @@ export function EditGuestDialog({
                       <FormItem>
                         <FormLabel>Tip</FormLabel>
                         <Select
-                          onValueChange={(value) => field.onChange(value === 'adult')}
-                          value={field.value ? 'adult' : 'child'}
+                          onValueChange={(value) =>
+                            field.onChange(value === "adult")
+                          }
+                          value={field.value ? "adult" : "child"}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -339,7 +378,7 @@ export function EditGuestDialog({
             </div>
 
             <Button type="submit" className="w-full">
-              {updateGuest.isPending ? 'Čuvanje...' : 'Sačuvaj izmene'}
+              {updateGuest.isPending ? "Čuvanje..." : "Sačuvaj izmene"}
             </Button>
           </form>
         </Form>

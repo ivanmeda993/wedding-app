@@ -1,45 +1,53 @@
-'use client';
+"use client";
 
-import { useGuests } from '../../hooks/queries';
-import { GuestCard } from './guest-card';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { Side, AttendanceStatus } from '../../types';
-import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
-import { useState } from 'react';
-import { ChevronDown, Users2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import { useGuests } from "../../hooks/queries";
+import { GuestCard } from "./guest-card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { Side, AttendanceStatus, Guest } from "../../types";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
+import { useState } from "react";
+import { ChevronDown, Users2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface GuestListProps {
-  selectedSide: Side | 'all';
-  selectedStatus: AttendanceStatus | 'all';
+  selectedSide: Side | "all";
+  selectedStatus: AttendanceStatus | "all";
   searchQuery: string;
 }
 
-export function GuestList({ selectedSide, selectedStatus, searchQuery }: GuestListProps) {
+export function GuestList({
+  selectedSide,
+  selectedStatus,
+  searchQuery,
+}: GuestListProps) {
   const { data: guests = [] } = useGuests();
   const [isOpen, setIsOpen] = useState(true);
-  const [openSections, setOpenSections] = useState<Side[]>(['bride', 'groom']);
+  const [openSections, setOpenSections] = useState<Side[]>(["bride", "groom"]);
 
-  const filterGuests = (guests: typeof store.guests) => {
-    return guests.filter(guest => {
+  const filterGuests = (guests: Guest[]) => {
+    return guests.filter((guest) => {
       const matchesSearch = searchQuery
-        ? `${guest.firstName} ${guest.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
+        ? `${guest.firstName} ${guest.lastName}`
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
         : true;
-      const matchesStatus = selectedStatus === 'all' ? true : guest.attendance === selectedStatus;
+      const matchesStatus =
+        selectedStatus === "all" ? true : guest.attendance === selectedStatus;
       return matchesSearch && matchesStatus;
     });
   };
 
   const ungroupedGuests = filterGuests(
-    guests.filter(guest => 
-      !guest.groupId && 
-      (selectedSide === 'all' ? true : guest.side === selectedSide)
+    guests.filter(
+      (guest) =>
+        !guest.groupId &&
+        (selectedSide === "all" ? true : guest.side === selectedSide)
     )
   );
 
-  const brideGuests = ungroupedGuests.filter(guest => guest.side === 'bride');
-  const groomGuests = ungroupedGuests.filter(guest => guest.side === 'groom');
+  const brideGuests = ungroupedGuests.filter((guest) => guest.side === "bride");
+  const groomGuests = ungroupedGuests.filter((guest) => guest.side === "groom");
 
   // If there are no ungrouped guests, return null
   if (ungroupedGuests.length === 0) {
@@ -47,9 +55,9 @@ export function GuestList({ selectedSide, selectedStatus, searchQuery }: GuestLi
   }
 
   const toggleSection = (side: Side) => {
-    setOpenSections(current =>
+    setOpenSections((current) =>
       current.includes(side)
-        ? current.filter(s => s !== side)
+        ? current.filter((s) => s !== side)
         : [...current, side]
     );
   };
@@ -57,14 +65,18 @@ export function GuestList({ selectedSide, selectedStatus, searchQuery }: GuestLi
   return (
     <Card>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CardHeader className="cursor-pointer p-3 sm:p-6" onClick={() => setIsOpen(!isOpen)}>
+        <CardHeader
+          className="cursor-pointer p-3 sm:p-6"
+          onClick={() => setIsOpen(!isOpen)}
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Users2 className="w-4 h-4 sm:w-5 sm:h-5" />
               <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                 Ostali gosti
                 <span className="text-xs sm:text-sm font-normal text-muted-foreground">
-                  ({ungroupedGuests.length} {ungroupedGuests.length === 1 ? 'gost' : 'gosta'})
+                  ({ungroupedGuests.length}{" "}
+                  {ungroupedGuests.length === 1 ? "gost" : "gosta"})
                 </span>
               </CardTitle>
             </div>
@@ -99,17 +111,21 @@ export function GuestList({ selectedSide, selectedStatus, searchQuery }: GuestLi
         <CollapsibleContent>
           <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
             <div className="space-y-4 sm:space-y-8">
-              {selectedSide !== 'groom' && brideGuests.length > 0 && (
-                <Collapsible open={openSections.includes('bride')}>
-                  <div 
+              {selectedSide !== "groom" && brideGuests.length > 0 && (
+                <Collapsible open={openSections.includes("bride")}>
+                  <div
                     className="flex items-center justify-between cursor-pointer py-2"
-                    onClick={() => toggleSection('bride')}
+                    onClick={() => toggleSection("bride")}
                   >
-                    <h3 className="text-sm sm:text-lg font-medium">Mladina strana</h3>
-                    <ChevronDown className={cn(
-                      "h-4 w-4 text-muted-foreground transition-transform",
-                      openSections.includes('bride') && "transform rotate-180"
-                    )} />
+                    <h3 className="text-sm sm:text-lg font-medium">
+                      Mladina strana
+                    </h3>
+                    <ChevronDown
+                      className={cn(
+                        "h-4 w-4 text-muted-foreground transition-transform",
+                        openSections.includes("bride") && "transform rotate-180"
+                      )}
+                    />
                   </div>
                   <CollapsibleContent>
                     <div className="space-y-3 sm:space-y-4 mt-3">
@@ -120,18 +136,22 @@ export function GuestList({ selectedSide, selectedStatus, searchQuery }: GuestLi
                   </CollapsibleContent>
                 </Collapsible>
               )}
-              
-              {selectedSide !== 'bride' && groomGuests.length > 0 && (
-                <Collapsible open={openSections.includes('groom')}>
-                  <div 
+
+              {selectedSide !== "bride" && groomGuests.length > 0 && (
+                <Collapsible open={openSections.includes("groom")}>
+                  <div
                     className="flex items-center justify-between cursor-pointer py-2"
-                    onClick={() => toggleSection('groom')}
+                    onClick={() => toggleSection("groom")}
                   >
-                    <h3 className="text-sm sm:text-lg font-medium">Mladoženjina strana</h3>
-                    <ChevronDown className={cn(
-                      "h-4 w-4 text-muted-foreground transition-transform",
-                      openSections.includes('groom') && "transform rotate-180"
-                    )} />
+                    <h3 className="text-sm sm:text-lg font-medium">
+                      Mladoženjina strana
+                    </h3>
+                    <ChevronDown
+                      className={cn(
+                        "h-4 w-4 text-muted-foreground transition-transform",
+                        openSections.includes("groom") && "transform rotate-180"
+                      )}
+                    />
                   </div>
                   <CollapsibleContent>
                     <div className="space-y-3 sm:space-y-4 mt-3">

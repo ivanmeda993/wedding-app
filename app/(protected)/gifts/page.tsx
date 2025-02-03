@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useGuests } from '@/features/wedding/hooks/queries';
-import { ArrowLeft, ArrowUpDown, Search, ChevronDown } from 'lucide-react';
-import Link from 'next/link';
-import { useState, useMemo } from 'react';
-import type { Gift, Side, GiftType } from '@/features/wedding/types';
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useGuests } from "@/features/wedding/hooks/queries";
+import { ArrowLeft, ArrowUpDown, Search, ChevronDown } from "lucide-react";
+import Link from "next/link";
+import { useState, useMemo } from "react";
+import type { Gift, Side, GiftType } from "@/features/wedding/types";
 import {
   Sheet,
   SheetContent,
@@ -17,8 +23,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
-type SortField = 'name' | 'amount' | 'type' | 'side';
-type SortOrder = 'asc' | 'desc';
+type SortField = "name" | "amount" | "type" | "side";
+type SortOrder = "asc" | "desc";
 
 interface GiftWithGuest extends Gift {
   guestName: string;
@@ -27,18 +33,18 @@ interface GiftWithGuest extends Gift {
 
 export default function GiftsPage() {
   const { data: guests = [] } = useGuests();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSide, setSelectedSide] = useState<Side | 'all'>('all');
-  const [selectedType, setSelectedType] = useState<GiftType | 'all'>('all');
-  const [sortField, setSortField] = useState<SortField>('name');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedSide, setSelectedSide] = useState<Side | "all">("all");
+  const [selectedType, setSelectedType] = useState<GiftType | "all">("all");
+  const [sortField, setSortField] = useState<SortField>("name");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
 
   // Transform guests data to gift list
   const gifts = useMemo(() => {
     return guests
-      .filter(guest => guest.gift)
-      .map(guest => ({
-        ...guest.gift!,
+      .filter((guest) => guest.gift)
+      .map((guest) => ({
+        ...(guest.gift || {}),
         guestName: `${guest.firstName} ${guest.lastName}`,
         side: guest.side,
       }));
@@ -47,39 +53,41 @@ export default function GiftsPage() {
   // Apply filters and sorting
   const filteredAndSortedGifts = useMemo(() => {
     return gifts
-      .filter(gift => {
+      .filter((gift) => {
         const matchesSearch = searchQuery
           ? gift.guestName.toLowerCase().includes(searchQuery.toLowerCase())
           : true;
-        const matchesSide = selectedSide === 'all' ? true : gift.side === selectedSide;
-        const matchesType = selectedType === 'all' ? true : gift.type === selectedType;
+        const matchesSide =
+          selectedSide === "all" ? true : gift.side === selectedSide;
+        const matchesType =
+          selectedType === "all" ? true : gift.type === selectedType;
         return matchesSearch && matchesSide && matchesType;
       })
       .sort((a, b) => {
         let comparison = 0;
-        
+
         switch (sortField) {
-          case 'name':
+          case "name":
             comparison = a.guestName.localeCompare(b.guestName);
             break;
-          case 'amount':
+          case "amount":
             comparison = (a.amount || 0) - (b.amount || 0);
             break;
-          case 'type':
-            comparison = (a.type || '').localeCompare(b.type || '');
+          case "type":
+            comparison = (a.type || "").localeCompare(b.type || "");
             break;
-          case 'side':
+          case "side":
             comparison = a.side.localeCompare(b.side);
             break;
         }
 
-        return sortOrder === 'asc' ? comparison : -comparison;
+        return sortOrder === "asc" ? comparison : -comparison;
       });
   }, [gifts, searchQuery, selectedSide, selectedType, sortField, sortOrder]);
 
   // Calculate total gift amount for filtered gifts
   const filteredTotalAmount = filteredAndSortedGifts.reduce((acc, gift) => {
-    if (gift.type === 'money' && gift.amount) {
+    if (gift.type === "money" && gift.amount) {
       return acc + gift.amount;
     }
     return acc;
@@ -87,10 +95,10 @@ export default function GiftsPage() {
 
   const handleSort = (field: SortField) => {
     if (field === sortField) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
       setSortField(field);
-      setSortOrder('asc');
+      setSortOrder("asc");
     }
   };
 
@@ -136,8 +144,13 @@ export default function GiftsPage() {
                       className="pl-10"
                     />
                   </div>
-                  
-                  <Select value={selectedSide as string} onValueChange={(value: Side | 'all') => setSelectedSide(value)}>
+
+                  <Select
+                    value={selectedSide}
+                    onValueChange={(value: string) =>
+                      setSelectedSide(value as Side | "all")
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Strana" />
                     </SelectTrigger>
@@ -148,7 +161,12 @@ export default function GiftsPage() {
                     </SelectContent>
                   </Select>
 
-                  <Select value={selectedType as string} onValueChange={(value: GiftType | 'all') => setSelectedType(value)}>
+                  <Select
+                    value={selectedType as string}
+                    onValueChange={(value: string) =>
+                      setSelectedType(value as GiftType | "all")
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Tip poklona" />
                     </SelectTrigger>
@@ -174,8 +192,13 @@ export default function GiftsPage() {
                     className="pl-10"
                   />
                 </div>
-                
-                <Select value={selectedSide} onValueChange={(value: Side | 'all') => setSelectedSide(value)}>
+
+                <Select
+                  value={selectedSide}
+                  onValueChange={(value: string) =>
+                    setSelectedSide(value as Side | "all")
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Strana" />
                   </SelectTrigger>
@@ -186,7 +209,12 @@ export default function GiftsPage() {
                   </SelectContent>
                 </Select>
 
-                <Select value={selectedType} onValueChange={(value: GiftType | 'all') => setSelectedType(value)}>
+                <Select
+                  value={selectedType as string}
+                  onValueChange={(value: string) =>
+                    setSelectedType(value as GiftType | "all")
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Tip poklona" />
                   </SelectTrigger>
@@ -200,29 +228,30 @@ export default function GiftsPage() {
             </div>
 
             <div className="text-right text-sm border-t pt-4 sm:border-none sm:pt-0">
-              <span className="text-muted-foreground">Ukupna vrednost:</span>{' '}
+              <span className="text-muted-foreground">Ukupna vrednost:</span>{" "}
               <span className="font-bold text-lg">
-                €{filteredTotalAmount.toLocaleString('de-DE')}
+                €{filteredTotalAmount.toLocaleString("de-DE")}
               </span>
             </div>
 
             {/* Mobile List View */}
             <div className="sm:hidden space-y-4">
-              {filteredAndSortedGifts.map((gift, index) => (
+              {filteredAndSortedGifts.map((gift) => (
                 <div
-                  key={index}
+                  key={gift.guestName}
                   className="p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
                 >
                   <div className="space-y-2">
                     <div className="font-medium">{gift.guestName}</div>
                     <div className="text-sm text-muted-foreground">
-                      {gift.side === 'bride' ? 'Mladina' : 'Mladoženjina'} strana
+                      {gift.side === "bride" ? "Mladina" : "Mladoženjina"}{" "}
+                      strana
                     </div>
                     <div className="flex justify-between items-center text-sm">
-                      <span>{gift.type === 'money' ? 'Novac' : 'Drugo'}</span>
+                      <span>{gift.type === "money" ? "Novac" : "Drugo"}</span>
                       <span className="font-medium">
-                        {gift.type === 'money' 
-                          ? `€${gift.amount?.toLocaleString('de-DE')}`
+                        {gift.type === "money"
+                          ? `€${gift.amount?.toLocaleString("de-DE")}`
                           : gift.description}
                       </span>
                     </div>
@@ -240,7 +269,7 @@ export default function GiftsPage() {
                       <th className="h-12 px-4 text-left align-middle font-medium">
                         <Button
                           variant="ghost"
-                          onClick={() => handleSort('name')}
+                          onClick={() => handleSort("name")}
                           className="hover:bg-transparent p-0 font-medium"
                         >
                           Gost
@@ -250,7 +279,7 @@ export default function GiftsPage() {
                       <th className="h-12 px-4 text-left align-middle font-medium">
                         <Button
                           variant="ghost"
-                          onClick={() => handleSort('side')}
+                          onClick={() => handleSort("side")}
                           className="hover:bg-transparent p-0 font-medium"
                         >
                           Strana
@@ -260,7 +289,7 @@ export default function GiftsPage() {
                       <th className="h-12 px-4 text-left align-middle font-medium">
                         <Button
                           variant="ghost"
-                          onClick={() => handleSort('type')}
+                          onClick={() => handleSort("type")}
                           className="hover:bg-transparent p-0 font-medium"
                         >
                           Tip poklona
@@ -270,7 +299,7 @@ export default function GiftsPage() {
                       <th className="h-12 px-4 text-left align-middle font-medium">
                         <Button
                           variant="ghost"
-                          onClick={() => handleSort('amount')}
+                          onClick={() => handleSort("amount")}
                           className="hover:bg-transparent p-0 font-medium"
                         >
                           Vrednost/Opis
@@ -280,21 +309,21 @@ export default function GiftsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredAndSortedGifts.map((gift, index) => (
+                    {filteredAndSortedGifts.map((gift) => (
                       <tr
-                        key={index}
+                        key={gift.guestName}
                         className="border-b transition-colors hover:bg-muted/50"
                       >
                         <td className="p-4 align-middle">{gift.guestName}</td>
                         <td className="p-4 align-middle">
-                          {gift.side === 'bride' ? 'Mladina' : 'Mladoženjina'}
+                          {gift.side === "bride" ? "Mladina" : "Mladoženjina"}
                         </td>
                         <td className="p-4 align-middle">
-                          {gift.type === 'money' ? 'Novac' : 'Drugo'}
+                          {gift.type === "money" ? "Novac" : "Drugo"}
                         </td>
                         <td className="p-4 align-middle">
-                          {gift.type === 'money' 
-                            ? `€${gift.amount?.toLocaleString('de-DE')}`
+                          {gift.type === "money"
+                            ? `€${gift.amount?.toLocaleString("de-DE")}`
                             : gift.description}
                         </td>
                       </tr>
@@ -304,7 +333,7 @@ export default function GiftsPage() {
                         Ukupna vrednost novčanih poklona
                       </td>
                       <td className="p-4 align-middle">
-                        €{filteredTotalAmount.toLocaleString('de-DE')}
+                        €{filteredTotalAmount.toLocaleString("de-DE")}
                       </td>
                     </tr>
                   </tbody>
