@@ -45,6 +45,13 @@ const guestSchema = z.object({
   side: z.enum(["bride", "groom"]),
   groupId: z.string().optional(),
   notes: z.string().optional(),
+  gift: z
+    .object({
+      type: z.enum(["money", "other"]),
+      amount: z.number().optional(),
+      description: z.string().optional(),
+    })
+    .optional(),
   companions: z.array(companionSchema).default([]),
 });
 
@@ -58,6 +65,7 @@ const defaultValues: GuestFormValues = {
   side: "bride",
   groupId: undefined,
   notes: "",
+  gift: undefined,
   companions: [],
 };
 
@@ -236,6 +244,87 @@ export function AddGuestDialog({
                 </FormItem>
               )}
             />
+
+            {/* Gift Section */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium">Poklon</h3>
+              </div>
+
+              <FormField
+                control={form.control}
+                name="gift.type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tip poklona</FormLabel>
+                    <Select
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        // Reset amount and description when type changes
+                        if (value === "money") {
+                          form.setValue("gift.amount", undefined);
+                          form.setValue("gift.description", undefined);
+                        } else if (value === "other") {
+                          form.setValue("gift.amount", undefined);
+                          form.setValue("gift.description", "");
+                        }
+                      }}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Izaberi tip poklona" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="money">Novac</SelectItem>
+                        <SelectItem value="other">Drugo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {form.watch("gift.type") === "money" && (
+                <FormField
+                  control={form.control}
+                  name="gift.amount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Iznos (€)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="Iznos"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {form.watch("gift.type") === "other" && (
+                <FormField
+                  control={form.control}
+                  name="gift.description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Opis poklona</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Opis poklona" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
 
             {/* Companions Section */}
             <div className="space-y-4">
