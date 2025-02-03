@@ -99,7 +99,10 @@ export function GuestGroups({
               guests.filter((guest) => guest.groupId === group.id)
             );
             const isOpen = openGroups.includes(group.id);
-            const totalGuests = group.stats.totalGuests;
+            const totalGuests = groupGuests.reduce(
+              (acc, guest) => acc + 1 + guest.companions.length,
+              0
+            );
 
             if (groupGuests.length === 0) return null;
 
@@ -130,7 +133,11 @@ export function GuestGroups({
                             </span>
                             <span className="text-sm font-normal text-muted-foreground">
                               • {totalGuests}{" "}
-                              {totalGuests === 1 ? "gost" : "gosta"}
+                              {totalGuests === 1
+                                ? "gost"
+                                : totalGuests < 5
+                                ? "gosta"
+                                : "gostiju"}
                             </span>
                           </CardTitle>
                         </div>

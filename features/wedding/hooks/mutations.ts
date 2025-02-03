@@ -1,11 +1,11 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '../lib/api';
-import { queryKeys } from './query-keys';
-import type { Guest, Group, Side, WeddingSetupFormData } from '../types';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "../lib/api";
+import { queryKeys } from "./query-keys";
+import type { Guest, Group, Side, WeddingSetupFormData } from "../types";
 
 export function useSetupWedding() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (data: WeddingSetupFormData) => api.setupWedding(data),
     onSuccess: (data) => {
@@ -16,7 +16,7 @@ export function useSetupWedding() {
 
 export function useUpdateWedding() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (data: WeddingSetupFormData) => api.updateWedding(data),
     onSuccess: (data) => {
@@ -27,9 +27,9 @@ export function useUpdateWedding() {
 
 export function useAddGuest() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: (guest: Omit<Guest, 'id'>) => api.addGuest(guest),
+    mutationFn: (guest: Omit<Guest, "id">) => api.addGuest(guest),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.guests });
       queryClient.invalidateQueries({ queryKey: queryKeys.groupsWithStats });
@@ -39,9 +39,9 @@ export function useAddGuest() {
 
 export function useUpdateGuest() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: ({ id, guest }: { id: string; guest: Partial<Guest> }) => 
+    mutationFn: ({ id, guest }: { id: string; guest: Partial<Guest> }) =>
       api.updateGuest(id, guest),
     onSuccess: () => {
       // Invalidate both guests and groups with stats queries
@@ -53,7 +53,7 @@ export function useUpdateGuest() {
 
 export function useDeleteGuest() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (id: string) => api.deleteGuest(id),
     onSuccess: () => {
@@ -66,9 +66,9 @@ export function useDeleteGuest() {
 
 export function useAddGroup() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: ({ name, side }: { name: string; side: Side }) => 
+    mutationFn: ({ name, side }: { name: string; side: Side }) =>
       api.addGroup(name, side),
     onSuccess: () => {
       // Invalidate both groups and groups with stats queries
@@ -80,9 +80,9 @@ export function useAddGroup() {
 
 export function useUpdateGroup() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: Partial<Group> }) => 
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<Group> }) =>
       api.updateGroup(id, updates),
     onSuccess: () => {
       // Invalidate both groups and groups with stats queries
@@ -94,7 +94,7 @@ export function useUpdateGroup() {
 
 export function useDeleteGroup() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (id: string) => api.deleteGroup(id),
     onSuccess: () => {
@@ -109,5 +109,16 @@ export function useDeleteGroup() {
 export function useShareWedding() {
   return useMutation({
     mutationFn: ({ email }: { email: string }) => api.shareWedding(email),
+  });
+}
+
+export function useDeleteCollaborator() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: api.deleteCollaborator,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.collaborators });
+    },
   });
 }

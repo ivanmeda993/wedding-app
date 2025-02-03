@@ -97,21 +97,21 @@ export function GuestCard({ guest }: GuestCardProps) {
 
             <div className="flex flex-wrap items-start gap-2 mt-2 sm:mt-0">
               {guest.phone && (
-                <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
-                  <div className="h-6 w-6 sm:h-8 sm:w-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Phone className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
+                <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
+                  <div className="h-5 w-5 sm:h-6 sm:w-6 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Phone className="w-3 h-3 text-primary" />
                   </div>
                   {guest.phone}
                 </div>
               )}
 
               {guest.gift && (
-                <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
-                  <div className="h-6 w-6 sm:h-8 sm:w-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
+                  <div className="h-5 w-5 sm:h-6 sm:w-6 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
                     {guest.gift.type === "money" ? (
-                      <Banknote className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
+                      <Banknote className="w-3 h-3 text-primary" />
                     ) : (
-                      <Gift className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
+                      <Gift className="w-3 h-3 text-primary" />
                     )}
                   </div>
                   {guest.gift.type === "money" ? (
@@ -123,9 +123,9 @@ export function GuestCard({ guest }: GuestCardProps) {
               )}
 
               {guest.notes && (
-                <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
-                  <div className="h-6 w-6 sm:h-8 sm:w-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <ScrollText className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
+                <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
+                  <div className="h-5 w-5 sm:h-6 sm:w-6 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <ScrollText className="w-3 h-3 text-primary" />
                   </div>
                   {guest.notes}
                 </div>
@@ -168,23 +168,23 @@ export function GuestCard({ guest }: GuestCardProps) {
 
         {guest.companions.length > 0 && (
           <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t">
-            <div className="flex items-center gap-2 text-xs sm:text-sm font-medium mb-2 sm:mb-3">
-              <div className="h-6 w-6 sm:h-8 sm:w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Users className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
+            <div className="flex items-center gap-1.5 text-xs sm:text-sm font-medium mb-2 sm:mb-3">
+              <div className="h-5 w-5 sm:h-6 sm:w-6 rounded-md bg-primary/10 flex items-center justify-center">
+                <Users className="w-3 h-3 text-primary" />
               </div>
               <span>Pratioci ({guest.companions.length})</span>
             </div>
-            <div className="grid gap-1 sm:gap-2 pl-8 sm:pl-10">
+            <div className="space-y-1 sm:space-y-2 pl-6 sm:pl-8">
               {guest.companions.map((companion, index) => (
                 <div
-                  key={index}
-                  className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2"
+                  key={`companion-${index}`}
+                  className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1.5"
                 >
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary/50" />
+                  <div className="w-1 h-1 rounded-full bg-primary/50" />
                   <span className="font-medium">
                     {companion.firstName} {companion.lastName}
                   </span>
-                  <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full bg-muted">
+                  <span className="text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full bg-muted">
                     {companion.isAdult ? "Odrasla osoba" : "Dete"}
                   </span>
                 </div>

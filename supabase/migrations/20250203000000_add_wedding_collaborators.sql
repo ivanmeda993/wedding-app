@@ -24,40 +24,136 @@ CREATE TABLE wedding_collaborators (
 -- Enable RLS
 ALTER TABLE wedding_collaborators ENABLE ROW LEVEL SECURITY;
 
--- Create policies
-CREATE POLICY "Users can view collaborators of their weddings"
-  ON wedding_collaborators FOR SELECT
-  TO authenticated
-  USING (EXISTS (
-    SELECT 1 FROM weddings
-    WHERE weddings.id = wedding_collaborators.wedding_id
-    AND weddings.user_id = auth.uid()
-  ));
+-- Drop all existing policies
+DROP POLICY IF EXISTS "Users can view own weddings" ON weddings;
+DROP POLICY IF EXISTS "Collaborators can view weddings" ON weddings;
+DROP POLICY IF EXISTS "Users can view and manage weddings" ON weddings;
+DROP POLICY IF EXISTS "Wedding access policy" ON weddings;
+DROP POLICY IF EXISTS "Collaborator access policy" ON weddings;
 
-CREATE POLICY "Users can add collaborators to their weddings"
-  ON wedding_collaborators FOR INSERT
+-- Create a single policy for weddings
+DROP POLICY IF EXISTS "Wedding access policy" ON weddings;
+CREATE POLICY "Wedding access policy"
+  ON weddings
+  AS PERMISSIVE
+  FOR ALL
   TO authenticated
-  WITH CHECK (EXISTS (
-    SELECT 1 FROM weddings
-    WHERE weddings.id = wedding_id
-    AND weddings.user_id = auth.uid()
-  ));
+  USING (
+    user_id = auth.uid() OR
+    invite_code::text = current_setting('request.jwt.claims')::json->>'invite_code'
+  );
 
-CREATE POLICY "Users can remove collaborators from their weddings"
-  ON wedding_collaborators FOR DELETE
+-- Create policy for collaborators table
+DROP POLICY IF EXISTS "Users can manage their own wedding collaborators" ON wedding_collaborators;
+DROP POLICY IF EXISTS "Users can insert collaborators" ON wedding_collaborators;
+DROP POLICY IF EXISTS "Users can view collaborators" ON wedding_collaborators;
+DROP POLICY IF EXISTS "Users can delete collaborators" ON wedding_collaborators;
+DROP POLICY IF EXISTS "Collaborators management" ON wedding_collaborators;
+CREATE POLICY "Collaborators management"
+  ON wedding_collaborators
+  AS PERMISSIVE
+  FOR ALL
   TO authenticated
-  USING (EXISTS (
-    SELECT 1 FROM weddings
-    WHERE weddings.id = wedding_collaborators.wedding_id
-    AND weddings.user_id = auth.uid()
-  ));
+  USING (
+    wedding_id IN (
+      SELECT id FROM weddings WHERE user_id = auth.uid()
+    )
+  );
 
--- Add policy to weddings table to allow collaborators to view
-CREATE POLICY "Collaborators can view weddings"
-  ON weddings FOR SELECT
-  TO authenticated
-  USING (EXISTS (
-    SELECT 1 FROM wedding_collaborators
-    WHERE wedding_collaborators.wedding_id = id
-    AND wedding_collaborators.email = auth.email()
-  ));
+-- Create a view for wedding access
+CREATE OR REPLACE VIEW accessible_weddings AS
+  SELECT w.* 
+  FROM weddings w
+  LEFT JOIN wedding_collaborators wc ON w.id = wc.wedding_id
+  WHERE w.user_id = auth.uid() OR wc.email = auth.email();
+
+-- Grant access to the view
+GRANT SELECT ON accessible_weddings TO authenticated;
+
+-- Create function to handle new collaborators
+CREATE OR REPLACE FUNCTION handle_new_collaborator()
+RETURNS TRIGGER AS $$
+DECLARE
+  invite_data JSONB;
+  user_id UUID;
+BEGIN
+  -- Create invite data
+  invite_data := jsonb_build_object(
+    'wedding_id', NEW.wedding_id,
+    'invited_by', auth.uid()
+  );
+
+  -- Create a new user if they don't exist
+  INSERT INTO auth.users (
+    id,
+    instance_id,
+    email,
+    raw_user_meta_data,
+    created_at,
+    updated_at,
+    confirmation_sent_at,
+    is_sso_user,
+    role
+  )
+  SELECT 
+    gen_random_uuid(),
+    '00000000-0000-0000-0000-000000000000'::uuid,
+    NEW.email,
+    jsonb_build_object(
+      'wedding_id', NEW.wedding_id,
+      'invited_by', auth.uid(),
+      'has_password', false
+    ),
+    now(),
+    now(),
+    now(),
+    false,
+    'authenticated'
+  WHERE NOT EXISTS (
+    SELECT 1 FROM auth.users WHERE email = NEW.email
+  )
+  RETURNING id INTO user_id;
+
+  -- If we created a new user, send them a magic link
+  IF user_id IS NOT NULL THEN
+    -- Insert email into auth.identities
+    INSERT INTO auth.identities (
+      id,
+      user_id,
+      identity_data,
+      provider,
+      last_sign_in_at,
+      created_at,
+      updated_at
+    ) VALUES (
+      gen_random_uuid(),
+      user_id,
+      jsonb_build_object(
+        'sub', user_id,
+        'email', NEW.email
+      ),
+      'email',
+      now(),
+      now(),
+      now()
+    );
+
+    -- Send magic link email
+    PERFORM auth.send_magic_link_email(NEW.email);
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Create trigger for new collaborators
+DROP TRIGGER IF EXISTS on_collaborator_created ON wedding_collaborators;
+CREATE TRIGGER on_collaborator_created
+  AFTER INSERT ON wedding_collaborators
+  FOR EACH ROW
+  EXECUTE FUNCTION handle_new_collaborator();
+
+-- Add invite_code column to weddings table
+ALTER TABLE weddings ADD COLUMN IF NOT EXISTS invite_code uuid DEFAULT gen_random_uuid() NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS weddings_invite_code_idx ON weddings(invite_code);
+

@@ -1,31 +1,43 @@
-import type { z } from 'zod';
-import { weddingSetupSchema } from './schemas';
+import type { z } from "zod";
+import { weddingSetupSchema } from "./schemas";
 
 export type WeddingSetupFormData = z.infer<typeof weddingSetupSchema>;
 
 export interface WeddingDetails extends WeddingSetupFormData {
   id: string;
+  brideName: string;
+  groomName: string;
+  venue: {
+    name: string;
+    address: string;
+    hall: string;
+  };
+  date: string;
+  pricePerPerson: number;
+  inviteCode: string;
 }
 
-export type Side = 'bride' | 'groom';
-export type AttendanceStatus = 'yes' | 'no' | 'pending';
-export type GiftType = 'money' | 'other' | null;
+export type Side = "bride" | "groom";
+export type AttendanceStatus = "yes" | "no" | "pending";
+export type GiftType = "money" | "other";
 
 export interface Gift {
-  type: GiftType;
+  type: GiftType | null;
   description?: string;
   amount?: number;
 }
 
+export type GuestGift = Gift | null | undefined;
+
 export interface Guest {
   id: string;
   firstName: string;
-  lastName: string;
+  lastName?: string;
   phone?: string;
   attendance: AttendanceStatus;
   side: Side;
   groupId: string | null;
-  gift?: Gift;
+  gift?: GuestGift;
   notes?: string;
   companions: Companion[];
 }
@@ -60,4 +72,10 @@ export interface WeddingStats {
   totalChildren: number;
   totalCost: number;
   totalGiftAmount: number;
+}
+
+export interface Collaborator {
+  id: string;
+  email: string;
+  created_at: string;
 }

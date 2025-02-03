@@ -4,6 +4,8 @@ import { Inter } from "next/font/google";
 import { Providers } from "./providers";
 import { AuthProvider } from "@/features/auth/providers/auth-provider";
 import { Analytics } from "@vercel/analytics/react";
+import { Toaster } from "@/components/ui/toaster";
+
 const inter = Inter({ subsets: ["latin"] });
 
 /**
@@ -48,6 +50,7 @@ export default function RootLayout({
           <AuthProvider>
             {children}
             <Analytics />
+            <Toaster />
           </AuthProvider>
         </Providers>
       </body>

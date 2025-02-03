@@ -1,16 +1,22 @@
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import type { WeddingSetupFormData, WeddingDetails, Guest, Group, GroupWithStats } from '../types';
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import type {
+  WeddingSetupFormData,
+  WeddingDetails,
+  Guest,
+  Group,
+  GroupWithStats,
+} from "../types";
 
 const supabase = createClientComponentClient();
 
 const api = {
   setupWedding: async (data: WeddingSetupFormData): Promise<WeddingDetails> => {
     const { data: session } = await supabase.auth.getSession();
-    if (!session.session?.user) throw new Error('Korisnik nije prijavljen');
+    if (!session.session?.user) throw new Error("Korisnik nije prijavljen");
 
     // Create the wedding
     const { data: wedding, error } = await supabase
-      .from('weddings')
+      .from("weddings")
       .insert({
         bride_name: data.brideName,
         groom_name: data.groomName,
@@ -25,7 +31,7 @@ const api = {
       .single();
 
     if (error) throw error;
-    if (!wedding) throw new Error('Greška pri kreiranju venčanja');
+    if (!wedding) throw new Error("Greška pri kreiranju venčanja");
 
     return {
       id: wedding.id,
@@ -38,15 +44,18 @@ const api = {
         hall: wedding.venue_hall,
       },
       pricePerPerson: wedding.price_per_person,
+      inviteCode: wedding.invite_code,
     };
   },
 
-  updateWedding: async (data: WeddingSetupFormData): Promise<WeddingDetails> => {
+  updateWedding: async (
+    data: WeddingSetupFormData
+  ): Promise<WeddingDetails> => {
     const { data: session } = await supabase.auth.getSession();
-    if (!session.session?.user) throw new Error('Korisnik nije prijavljen');
+    if (!session.session?.user) throw new Error("Korisnik nije prijavljen");
 
     const { data: wedding, error } = await supabase
-      .from('weddings')
+      .from("weddings")
       .update({
         bride_name: data.brideName,
         groom_name: data.groomName,
@@ -56,12 +65,12 @@ const api = {
         venue_hall: data.venue.hall,
         price_per_person: Number(data.pricePerPerson),
       })
-      .eq('user_id', session.session.user.id)
+      .eq("user_id", session.session.user.id)
       .select()
       .single();
 
     if (error) throw error;
-    if (!wedding) throw new Error('Greška pri ažuriranju venčanja');
+    if (!wedding) throw new Error("Greška pri ažuriranju venčanja");
 
     return {
       id: wedding.id,
@@ -74,6 +83,7 @@ const api = {
         hall: wedding.venue_hall,
       },
       pricePerPerson: wedding.price_per_person,
+      inviteCode: wedding.invite_code,
     };
   },
 
@@ -82,13 +92,15 @@ const api = {
     if (!session.session?.user) return null;
 
     const { data: wedding, error } = await supabase
-      .from('weddings')
-      .select()
-      .eq('user_id', session.session.user.id)
+      .from("weddings")
+      .select(
+        "id, bride_name, groom_name, date, venue_name, venue_address, venue_hall, price_per_person, invite_code"
+      )
+      .eq("user_id", session.session.user.id)
       .single();
 
     if (error) {
-      if (error.code === 'PGRST116') return null; // No rows returned
+      if (error.code === "PGRST116") return null; // No rows returned
       throw error;
     }
     if (!wedding) return null;
@@ -104,18 +116,19 @@ const api = {
         hall: wedding.venue_hall,
       },
       pricePerPerson: wedding.price_per_person,
+      inviteCode: wedding.invite_code,
     };
   },
 
   getGroups: async (): Promise<Group[]> => {
     const { data: groups, error } = await supabase
-      .from('groups')
-      .select('*')
-      .order('name');
+      .from("groups")
+      .select("*")
+      .order("name");
 
     if (error) throw error;
 
-    return groups.map(group => ({
+    return groups.map((group) => ({
       id: group.id,
       name: group.name,
       side: group.side,
@@ -124,17 +137,19 @@ const api = {
 
   getGuests: async (): Promise<Guest[]> => {
     const { data: guests, error: guestsError } = await supabase
-      .from('guests')
-      .select(`
+      .from("guests")
+      .select(
+        `
         *,
         companions (*),
         gifts (*)
-      `)
-      .order('created_at');
+      `
+      )
+      .order("created_at");
 
     if (guestsError) throw guestsError;
 
-    return guests.map(guest => ({
+    return guests.map((guest) => ({
       id: guest.id,
       firstName: guest.first_name,
       lastName: guest.last_name,
@@ -149,35 +164,39 @@ const api = {
         lastName: companion.last_name,
         isAdult: companion.is_adult,
       })),
-      gift: guest.gifts[0] ? {
-        type: guest.gifts[0].type,
-        description: guest.gifts[0].description,
-        amount: guest.gifts[0].amount,
-      } : undefined,
+      gift: guest.gifts[0]
+        ? {
+            type: guest.gifts[0].type,
+            description: guest.gifts[0].description,
+            amount: guest.gifts[0].amount,
+          }
+        : undefined,
     }));
   },
 
   getGroupsWithStats: async (): Promise<GroupWithStats[]> => {
     const { data: groups, error } = await supabase
-      .from('groups')
-      .select(`
+      .from("groups")
+      .select(
+        `
         *,
         guests (
           *,
           companions (*),
           gifts (*)
         )
-      `)
-      .order('name');
+      `
+      )
+      .order("name");
 
     if (error) throw error;
 
-    return groups.map(group => {
+    return groups.map((group) => {
       const guests = group.guests || [];
       const companions = guests.flatMap((g: any) => g.companions || []);
       const giftAmount = guests.reduce((acc: number, guest: any) => {
         const gift = guest.gifts[0];
-        return acc + (gift?.type === 'money' ? gift.amount : 0);
+        return acc + (gift?.type === "money" ? gift.amount : 0);
       }, 0);
 
       return {
@@ -186,7 +205,8 @@ const api = {
         side: group.side,
         stats: {
           totalGuests: guests.length + companions.length,
-          totalAdults: guests.length + companions.filter((c: any) => c.is_adult).length,
+          totalAdults:
+            guests.length + companions.filter((c: any) => c.is_adult).length,
           totalChildren: companions.filter((c: any) => !c.is_adult).length,
           totalGiftAmount: giftAmount,
         },
@@ -194,20 +214,20 @@ const api = {
     });
   },
 
-  addGuest: async (guest: Omit<Guest, 'id'>): Promise<void> => {
+  addGuest: async (guest: Omit<Guest, "id">): Promise<void> => {
     const { data: session } = await supabase.auth.getSession();
-    if (!session.session?.user) throw new Error('Korisnik nije prijavljen');
+    if (!session.session?.user) throw new Error("Korisnik nije prijavljen");
 
     const { data: wedding } = await supabase
-      .from('weddings')
-      .select('id')
-      .eq('user_id', session.session.user.id)
+      .from("weddings")
+      .select("id")
+      .eq("user_id", session.session.user.id)
       .single();
 
-    if (!wedding) throw new Error('Venčanje nije pronađeno');
+    if (!wedding) throw new Error("Venčanje nije pronađeno");
 
     const { data: newGuest, error: guestError } = await supabase
-      .from('guests')
+      .from("guests")
       .insert({
         first_name: guest.firstName,
         last_name: guest.lastName,
@@ -225,9 +245,9 @@ const api = {
 
     if (guest.companions?.length > 0) {
       const { error: companionsError } = await supabase
-        .from('companions')
+        .from("companions")
         .insert(
-          guest.companions.map(companion => ({
+          guest.companions.map((companion) => ({
             first_name: companion.firstName,
             last_name: companion.lastName,
             is_adult: companion.isAdult,
@@ -242,12 +262,13 @@ const api = {
       const giftData = {
         type: guest.gift.type,
         guest_id: newGuest.id,
-        description: guest.gift.type === 'other' ? guest.gift.description : null,
-        amount: guest.gift.type === 'money' ? guest.gift.amount : null,
+        description:
+          guest.gift.type === "other" ? guest.gift.description : null,
+        amount: guest.gift.type === "money" ? guest.gift.amount : null,
       };
 
       const { error: giftError } = await supabase
-        .from('gifts')
+        .from("gifts")
         .insert(giftData);
 
       if (giftError) throw giftError;
@@ -256,7 +277,7 @@ const api = {
 
   updateGuest: async (id: string, updates: Partial<Guest>): Promise<void> => {
     const { error: guestError } = await supabase
-      .from('guests')
+      .from("guests")
       .update({
         first_name: updates.firstName,
         last_name: updates.lastName,
@@ -266,23 +287,20 @@ const api = {
         group_id: updates.groupId,
         notes: updates.notes,
       })
-      .eq('id', id);
+      .eq("id", id);
 
     if (guestError) throw guestError;
 
     if (updates.companions) {
       // Delete existing companions
-      await supabase
-        .from('companions')
-        .delete()
-        .eq('guest_id', id);
+      await supabase.from("companions").delete().eq("guest_id", id);
 
       // Add new companions
       if (updates.companions.length > 0) {
         const { error: companionsError } = await supabase
-          .from('companions')
+          .from("companions")
           .insert(
-            updates.companions.map(companion => ({
+            updates.companions.map((companion) => ({
               first_name: companion.firstName,
               last_name: companion.lastName,
               is_adult: companion.isAdult,
@@ -296,22 +314,20 @@ const api = {
 
     if (updates.gift !== undefined) {
       // Delete existing gift
-      await supabase
-        .from('gifts')
-        .delete()
-        .eq('guest_id', id);
+      await supabase.from("gifts").delete().eq("guest_id", id);
 
       // Add new gift if it has a valid type
       if (updates.gift && updates.gift.type) {
         const giftData = {
           type: updates.gift.type,
           guest_id: id,
-          description: updates.gift.type === 'other' ? updates.gift.description : null,
-          amount: updates.gift.type === 'money' ? updates.gift.amount : null,
+          description:
+            updates.gift.type === "other" ? updates.gift.description : null,
+          amount: updates.gift.type === "money" ? updates.gift.amount : null,
         };
 
         const { error: giftError } = await supabase
-          .from('gifts')
+          .from("gifts")
           .insert(giftData);
 
         if (giftError) throw giftError;
@@ -320,73 +336,99 @@ const api = {
   },
 
   deleteGuest: async (id: string): Promise<void> => {
-    const { error } = await supabase
-      .from('guests')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from("guests").delete().eq("id", id);
 
     if (error) throw error;
   },
 
-  addGroup: async (name: string, side: Guest['side']): Promise<void> => {
+  addGroup: async (name: string, side: Guest["side"]): Promise<void> => {
     const { data: session } = await supabase.auth.getSession();
-    if (!session.session?.user) throw new Error('Korisnik nije prijavljen');
+    if (!session.session?.user) throw new Error("Korisnik nije prijavljen");
 
     const { data: wedding } = await supabase
-      .from('weddings')
-      .select('id')
-      .eq('user_id', session.session.user.id)
+      .from("weddings")
+      .select("id")
+      .eq("user_id", session.session.user.id)
       .single();
 
-    if (!wedding) throw new Error('Venčanje nije pronađeno');
+    if (!wedding) throw new Error("Venčanje nije pronađeno");
 
-    const { error } = await supabase
-      .from('groups')
-      .insert({
-        name,
-        side,
-        wedding_id: wedding.id,
-      });
+    const { error } = await supabase.from("groups").insert({
+      name,
+      side,
+      wedding_id: wedding.id,
+    });
 
     if (error) throw error;
   },
 
   updateGroup: async (id: string, updates: Partial<Group>): Promise<void> => {
     const { error } = await supabase
-      .from('groups')
+      .from("groups")
       .update(updates)
-      .eq('id', id);
+      .eq("id", id);
 
     if (error) throw error;
   },
 
   deleteGroup: async (id: string): Promise<void> => {
-    const { error } = await supabase
-      .from('groups')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from("groups").delete().eq("id", id);
 
     if (error) throw error;
   },
 
   shareWedding: async (email: string): Promise<void> => {
     const { data: session } = await supabase.auth.getSession();
-    if (!session.session?.user) throw new Error('Korisnik nije prijavljen');
+    if (!session.session?.user) throw new Error("Korisnik nije prijavljen");
 
     const { data: wedding } = await supabase
-      .from('weddings')
-      .select('id')
-      .eq('user_id', session.session.user.id)
+      .from("weddings")
+      .select("id")
+      .eq("user_id", session.session.user.id)
       .single();
 
-    if (!wedding) throw new Error('Venčanje nije pronađeno');
+    if (!wedding) throw new Error("Venčanje nije pronađeno");
 
+    const { error } = await supabase.from("wedding_collaborators").insert({
+      wedding_id: wedding.id,
+      email: email,
+    });
+
+    if (error) throw error;
+  },
+
+  getCollaborators: async () => {
+    const { data: session } = await supabase.auth.getSession();
+    if (!session.session?.user) throw new Error("Korisnik nije prijavljen");
+
+    const { data: wedding } = await supabase
+      .from("weddings")
+      .select("id")
+      .eq("user_id", session.session.user.id)
+      .single();
+
+    if (!wedding) throw new Error("Venčanje nije pronađeno");
+
+    const { data: collaborators, error } = await supabase
+      .from("wedding_collaborators")
+      .select("id, email, created_at")
+      .eq("wedding_id", wedding.id)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    return collaborators.map((c) => ({
+      id: c.id,
+      email: c.email,
+      created_at: c.created_at,
+    }));
+  },
+
+  deleteCollaborator: async (id: string): Promise<void> => {
     const { error } = await supabase
-      .from('wedding_collaborators')
-      .insert({
-        wedding_id: wedding.id,
-        email: email,
-      });
+      .from("wedding_collaborators")
+      .delete()
+      .eq("id", id);
 
     if (error) throw error;
   },
