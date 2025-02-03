@@ -96,7 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/api/auth/callback`,
+        emailRedirectTo: `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}/api/auth/callback`,
       },
     });
 
