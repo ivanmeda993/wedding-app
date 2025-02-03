@@ -16,6 +16,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Check, Copy, Mail, UserX } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useCollaborators, useWeddingDetails } from "../../hooks/queries";
+import { supabase } from "../../../../lib/supabase";
 
 export function ShareWeddingDialog({
   open,
@@ -36,19 +37,40 @@ export function ShareWeddingDialog({
     e.preventDefault();
 
     if (email.trim()) {
-      shareWedding.mutate(
-        { email: email.trim() },
-        {
-          onSuccess: () => {
-            setEmail("");
-            onOpenChange(false);
-            toast({
-              title: "Uspešno deljenje",
-              description: `Pristup je uspešno podeljen sa ${email}`,
-            });
+      try {
+        // Add collaborator
+        await shareWedding.mutateAsync(
+          { email: email.trim() },
+          {
+            onSuccess: () => {
+              setEmail("");
+            },
+          }
+        );
+
+        // Send magic link
+        const { error: magicLinkError } = await supabase.auth.signInWithOtp({
+          email: email.trim(),
+          options: {
+            emailRedirectTo: `${window.location.origin}/invite/${weddingDetails?.inviteCode}`,
           },
-        }
-      );
+        });
+
+        if (magicLinkError) throw magicLinkError;
+
+        onOpenChange(false);
+        toast({
+          title: "Uspešno deljenje",
+          description: `Pristup je uspešno podeljen sa ${email}. Poslali smo email sa linkom za prijavu.`,
+        });
+      } catch (error) {
+        console.error("Error sharing wedding:", error);
+        toast({
+          title: "Greška",
+          description: "Došlo je do greške prilikom deljenja pristupa.",
+          variant: "destructive",
+        });
+      }
     }
   };
 

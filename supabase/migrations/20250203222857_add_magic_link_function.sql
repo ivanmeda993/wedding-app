@@ -1,24 +1,12 @@
 /*
-  # Dodavanje funkcije za slanje magic link emaila
+  # Ažuriranje handle_new_collaborator funkcije
 
-  1. Nova funkcija
-    - Šalje magic link email novom kolaboratoru
-    - Poziva se iz handle_new_collaborator funkcije
+  1. Izmene
+    - Uklonjena funkcija za slanje magic linka (koristiće se Supabase Auth API)
+    - Dodata provera da li korisnik već postoji kao kolaborator
 */
 
--- Create function to send magic link email
-CREATE OR REPLACE FUNCTION send_magic_link_email(user_email text)
-RETURNS void
-SECURITY DEFINER SET search_path = public
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  -- Send magic link email using Supabase's built-in email service
-  SELECT auth.send_magic_link_email(user_email);
-END;
-$$;
-
--- Update handle_new_collaborator function to send magic link
+-- Update handle_new_collaborator function
 CREATE OR REPLACE FUNCTION handle_new_collaborator()
 RETURNS trigger
 SECURITY DEFINER SET search_path = public
@@ -26,7 +14,17 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
   new_user_id uuid;
+  existing_collaborator_id uuid;
 BEGIN
+  -- Check if collaborator already exists
+  SELECT id INTO existing_collaborator_id
+  FROM wedding_collaborators
+  WHERE wedding_id = NEW.wedding_id AND email = NEW.email;
+
+  IF existing_collaborator_id IS NOT NULL THEN
+    RETURN NULL; -- Skip if already exists
+  END IF;
+
   -- Check if user exists
   SELECT id INTO new_user_id
   FROM auth.users
@@ -58,9 +56,6 @@ BEGIN
 
     -- Profile will be created by handle_new_user trigger
   END IF;
-
-  -- Send magic link email
-  PERFORM send_magic_link_email(NEW.email);
 
   RETURN NEW;
 END;
