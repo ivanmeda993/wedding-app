@@ -2,6 +2,22 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
+/**
+ * Card Component
+ *
+ * Reusable card component with:
+ * - Consistent styling
+ * - Optional header
+ * - Content area
+ * - Footer section
+ * - Hover effects
+ *
+ * @component
+ * @param {Object} props
+ * @param {ReactNode} props.children - Card content
+ * @param {string} [props.className] - Additional CSS classes
+ */
+
 const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>

@@ -46,6 +46,22 @@ function StatCard({
   );
 }
 
+/**
+ * Wedding Statistics Component
+ *
+ * Displays key wedding metrics:
+ * - Total guest count
+ * - Confirmed guests
+ * - Children count (with age consideration)
+ * - Cost calculations
+ * - Group distribution
+ *
+ * Special handling for children under 6-8 years
+ * who don't count towards full seat costs
+ *
+ * @component
+ */
+
 export function WeddingStats() {
   const stats = useWeddingStats();
 

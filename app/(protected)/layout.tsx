@@ -2,6 +2,26 @@
 
 import { WeddingHeader } from "@/features/wedding/components/dashboard/wedding-header";
 import { useWeddingDetails } from "@/features/wedding/hooks/queries";
+import type { Viewport } from "next";
+/**
+ * Protected Layout
+ *
+ * Layout wrapper for authenticated routes:
+ * - Handles authentication check
+ * - Provides navigation
+ * - Common UI elements
+ *
+ * @layout
+ */
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  // Also supported but less commonly used
+  // interactiveWidget: 'resizes-visual',
+};
 
 export default function ProtectedLayout({
   children,

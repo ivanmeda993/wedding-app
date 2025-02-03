@@ -18,6 +18,30 @@ import { Input } from "@/components/ui/input";
 import { useFilterStore } from "../../stores/filter-store";
 import type { Side, AttendanceStatus } from "../../types";
 
+/**
+ * Wedding Dashboard Component
+ *
+ * Main dashboard for wedding planning application that displays:
+ * - Wedding header with basic info
+ * - Statistics about guests and costs
+ * - Guest groups management
+ * - Individual guest cards
+ *
+ * Features:
+ * - Track RSVPs and plus-ones
+ * - Monitor children guests (under 6-8 don't count for full seat)
+ * - Flexible guest grouping (Work, Family, Friends, etc.)
+ * - Separate tracking for bride's and groom's guests
+ * - Gift registry integration
+ * - Smart cost calculations
+ *
+ * @component
+ * @example
+ * return (
+ *   <WeddingDashboard />
+ * )
+ */
+
 export function Dashboard() {
   const [isAddGroupOpen, setIsAddGroupOpen] = useState(false);
   const [isAddGuestOpen, setIsAddGuestOpen] = useState(false);

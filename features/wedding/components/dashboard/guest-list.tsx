@@ -66,13 +66,13 @@ export function GuestList({
     <Card>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CardHeader
-          className="cursor-pointer p-3 sm:p-6"
+          className="cursor-pointer p-3"
           onClick={() => setIsOpen(!isOpen)}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Users2 className="w-4 h-4 sm:w-5 sm:h-5" />
-              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <CardTitle className="flex items-center gap-2 text-sm sm:text-lg">
                 Ostali gosti
                 <span className="text-xs sm:text-sm font-normal text-muted-foreground">
                   ({ungroupedGuests.length}{" "}

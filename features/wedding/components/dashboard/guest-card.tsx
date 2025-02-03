@@ -29,6 +29,22 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useDeleteGuest } from "../../hooks/mutations";
 
+/**
+ * Guest Card Component
+ *
+ * Displays individual guest information including:
+ * - Name
+ * - RSVP status
+ * - Plus-one details
+ * - Children information
+ * - Guest side (bride/groom)
+ * - Group assignment
+ *
+ * @component
+ * @param {Object} props
+ * @param {Guest} props.guest - Guest information
+ */
+
 interface GuestCardProps {
   guest: Guest;
 }

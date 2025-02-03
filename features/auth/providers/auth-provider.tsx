@@ -106,7 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (data.user && !data.user.confirmed_at) {
       throw new Error(
-        "Poslali smo vam email za potvrdu. Molimo vas da potvrdite vašu email adresu pre prijave."
+        "Poslali smo vam email za potvrdu. Molimo vas da potvrdite vašu email adresu pre prijave. Proverite spam folder ako ne vidite email."
       );
     }
   };

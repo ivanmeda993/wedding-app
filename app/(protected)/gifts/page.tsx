@@ -31,6 +31,20 @@ interface GiftWithGuest extends Gift {
   side: Side;
 }
 
+/**
+ * Gift Registry Page
+ *
+ * Manages wedding gifts with features:
+ * - Gift tracking
+ * - Gift assignment to guests
+ * - Gift categories
+ * - Notes and status tracking
+ *
+ * Protected route - requires authentication
+ *
+ * @page
+ */
+
 export default function GiftsPage() {
   const { data: guests = [] } = useGuests();
   const [searchQuery, setSearchQuery] = useState("");

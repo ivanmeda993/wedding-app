@@ -4,6 +4,20 @@ import { useWeddingDetails } from "@/features/wedding/hooks/queries";
 import { WeddingSetup } from "@/features/wedding/components/setup";
 import { Dashboard } from "@/features/wedding/components/dashboard";
 
+/**
+ * Protected Dashboard Page
+ *
+ * Main entry point for authenticated users.
+ * Renders the wedding planning dashboard with:
+ * - Guest management
+ * - Statistics
+ * - Group management
+ *
+ * Protected route - requires authentication
+ *
+ * @page
+ */
+
 export default function Home() {
   const { data: weddingDetails, isLoading } = useWeddingDetails();
 

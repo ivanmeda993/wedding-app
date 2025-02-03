@@ -17,6 +17,24 @@ interface GuestGroupsProps {
   searchQuery: string;
 }
 
+/**
+ * Guest Groups Component
+ *
+ * Manages guest categorization with:
+ * - Custom group creation
+ * - Group assignment
+ * - Group statistics
+ * - Filtering capabilities
+ *
+ * Default groups include Work, Family, Friends
+ * but users can create custom groups
+ *
+ * @component
+ * @param {Object} props
+ * @param {Group[]} props.groups - Available groups
+ * @param {Function} props.onGroupCreate - Handler for new group creation
+ */
+
 export function GuestGroups({
   selectedSide,
   selectedStatus,

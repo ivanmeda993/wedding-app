@@ -61,7 +61,7 @@ export default function RegisterPage() {
       setSuccess(null);
       await signUp(values);
       setSuccess(
-        "Poslali smo vam email za potvrdu. Molimo vas da potvrdite vašu email adresu pre prijave."
+        "Poslali smo vam email za potvrdu. Molimo vas da potvrdite vašu email adresu pre prijave. Proverite spam folder ako ne vidite email."
       );
       form.reset();
     } catch (err) {
