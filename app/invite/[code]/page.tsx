@@ -1,30 +1,37 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Loader2, Mail } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export default function InvitePage({ params }: { params: { code: string } }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>();
-  const [email, setEmail] = useState("");
-  const [emailSent, setEmailSent] = useState(false);
-  const [weddingDetails, setWeddingDetails] = useState<{
-    brideName: string;
-    groomName: string;
-  }>();
   const router = useRouter();
-  const supabase = createClientComponentClient();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    async function checkInvite() {
+    async function handleAuth() {
       try {
+        // Check if we have a code from magic link
+        const code = searchParams.get("code");
+        if (code) {
+          // Exchange code for session
+          const { data, error: authError } =
+            await supabase.auth.exchangeCodeForSession(code);
+          if (authError) throw authError;
+
+          // Check if we have a redirect URL in user metadata
+          const redirectTo = data.user?.user_metadata?.redirect_to;
+          if (redirectTo) {
+            router.push(redirectTo);
+            return;
+          }
+        }
+
         // Get wedding details using RPC function
         const { data: wedding, error: weddingError } = await supabase.rpc(
           "get_wedding_by_invite_code",
@@ -40,15 +47,11 @@ export default function InvitePage({ params }: { params: { code: string } }) {
           return;
         }
 
-        setWeddingDetails({
-          brideName: wedding.bride_name,
-          groomName: wedding.groom_name,
-        });
-
-        // Check if user is already logged in
+        // Check if user is logged in
         const {
           data: { session },
         } = await supabase.auth.getSession();
+
         if (session?.user) {
           // Add as collaborator if not already
           const { error: collaboratorError } = await supabase
@@ -83,34 +86,14 @@ export default function InvitePage({ params }: { params: { code: string } }) {
 
         setLoading(false);
       } catch (err) {
-        setError("Došlo je do greške pri proveri pozivnice.");
+        console.error("Error handling auth:", err);
+        setError("Došlo je do greške pri autentikaciji.");
         setLoading(false);
       }
     }
 
-    checkInvite();
-  }, [params.code, router, supabase]);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email: email.trim(),
-        options: {
-          emailRedirectTo: `${window.location.origin}/invite/${params.code}`,
-        },
-      });
-
-      if (error) throw error;
-
-      setEmailSent(true);
-    } catch (err) {
-      setError("Došlo je do greške pri slanju email-a.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    handleAuth();
+  }, [params.code, router, searchParams]);
 
   if (loading) {
     return (
@@ -123,27 +106,9 @@ export default function InvitePage({ params }: { params: { code: string } }) {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <Alert variant="destructive" className="max-w-md">
+        <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
-      </div>
-    );
-  }
-
-  if (emailSent) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
-          <CardHeader>
-            <CardTitle className="text-center">Proverite svoj email</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-center text-muted-foreground">
-              Poslali smo vam email sa linkom za prijavu. Kliknite na link u
-              email-u da biste pristupili venčanju.
-            </p>
-          </CardContent>
-        </Card>
       </div>
     );
   }
@@ -152,33 +117,12 @@ export default function InvitePage({ params }: { params: { code: string } }) {
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="max-w-md w-full">
         <CardHeader>
-          <CardTitle className="text-center">
-            Dobrodošli na venčanje {weddingDetails?.brideName} i{" "}
-            {weddingDetails?.groomName}
-          </CardTitle>
+          <CardTitle className="text-center">Autentikacija u toku</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-center text-muted-foreground mb-8">
-            Da biste pristupili evidenciji gostiju, unesite svoju email adresu.
-            Poslaćemo vam link za prijavu.
+          <p className="text-center text-muted-foreground">
+            Molimo sačekajte dok vas prijavimo...
           </p>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email adresa</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="email@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              <Mail className="w-4 h-4 mr-2" />
-              Pošalji link za prijavu
-            </Button>
-          </form>
         </CardContent>
       </Card>
     </div>
