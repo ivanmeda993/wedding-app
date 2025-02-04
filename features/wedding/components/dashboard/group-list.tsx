@@ -67,7 +67,7 @@ export function GroupList({
                         <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
                           <div className="flex items-center gap-1 text-sm md:text-lg font-semibold text-purple-800">
                             <UsersRound className="w-5 h-5" />
-                            <span className="bg-clip-text text-transparent">
+                            <span className="bg-clip-text text-purple-800">
                               {group.name}
                             </span>
                           </div>
