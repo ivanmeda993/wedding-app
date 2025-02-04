@@ -24,4 +24,7 @@ BEGIN
   FROM weddings w
   WHERE w.invite_code = code::uuid;
 END;
-$$; 
+$$;
+
+-- Grant execute permission to authenticated users
+GRANT EXECUTE ON FUNCTION get_wedding_by_invite_code(text) TO authenticated; 
