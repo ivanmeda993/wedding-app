@@ -1,40 +1,178 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import { queryKeys } from "./query-keys";
-import type { GroupWithStats, Collaborator } from "../types";
+import type { GroupWithStats, Collaborator, WeddingDetails } from "../types";
+import { useAuth } from "@/features/auth/hooks/use-auth";
+import { supabase } from "@/lib/supabase";
 
 export function useWeddingDetails() {
+  const { user } = useAuth();
+
   return useQuery({
     queryKey: queryKeys.weddingDetails,
-    queryFn: api.getWeddingDetails,
+    queryFn: async () => {
+      if (!user) return null;
+
+      // First check if user is the owner
+      const { data: ownedWedding } = await supabase
+        .from("weddings")
+        .select(
+          `
+          id,
+          bride_name,
+          groom_name,
+          date,
+          venue:venue_name,
+          venue_address,
+          venue_hall,
+          price_per_person,
+          invite_code
+          `
+        )
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (ownedWedding) {
+        return {
+          id: ownedWedding.id,
+          brideName: ownedWedding.bride_name,
+          groomName: ownedWedding.groom_name,
+          date: ownedWedding.date,
+          venue: {
+            name: ownedWedding.venue,
+            address: ownedWedding.venue_address,
+            hall: ownedWedding.venue_hall,
+          },
+          pricePerPerson: ownedWedding.price_per_person,
+          inviteCode: ownedWedding.invite_code,
+        } as WeddingDetails;
+      }
+
+      // Then check user metadata
+      const weddingId = user.user_metadata?.wedding_id;
+      if (weddingId) {
+        const { data: wedding } = await supabase
+          .from("weddings")
+          .select(
+            `
+            id,
+            bride_name,
+            groom_name,
+            date,
+            venue:venue_name,
+            venue_address,
+            venue_hall,
+            price_per_person,
+            invite_code
+            `
+          )
+          .eq("id", weddingId)
+          .maybeSingle();
+
+        if (wedding) {
+          return {
+            id: wedding.id,
+            brideName: wedding.bride_name,
+            groomName: wedding.groom_name,
+            date: wedding.date,
+            venue: {
+              name: wedding.venue,
+              address: wedding.venue_address,
+              hall: wedding.venue_hall,
+            },
+            pricePerPerson: wedding.price_per_person,
+            inviteCode: wedding.invite_code,
+          } as WeddingDetails;
+        }
+      }
+
+      // Finally check collaborators
+      const { data: collaborator } = await supabase
+        .from("wedding_collaborators")
+        .select("wedding_id")
+        .eq("email", user.email)
+        .maybeSingle();
+
+      if (collaborator) {
+        const { data: wedding } = await supabase
+          .from("weddings")
+          .select(
+            `
+            id,
+            bride_name,
+            groom_name,
+            date,
+            venue:venue_name,
+            venue_address,
+            venue_hall,
+            price_per_person,
+            invite_code
+            `
+          )
+          .eq("id", collaborator.wedding_id)
+          .maybeSingle();
+
+        if (wedding) {
+          return {
+            id: wedding.id,
+            brideName: wedding.bride_name,
+            groomName: wedding.groom_name,
+            date: wedding.date,
+            venue: {
+              name: wedding.venue,
+              address: wedding.venue_address,
+              hall: wedding.venue_hall,
+            },
+            pricePerPerson: wedding.price_per_person,
+            inviteCode: wedding.invite_code,
+          } as WeddingDetails;
+        }
+      }
+
+      return null;
+    },
+    enabled: !!user,
+    retry: false,
   });
 }
 
 export function useGroups() {
+  const { data: weddingDetails, isSuccess } = useWeddingDetails();
+
   return useQuery({
     queryKey: queryKeys.groups,
     queryFn: api.getGroups,
+    enabled: isSuccess && !!weddingDetails,
   });
 }
 
 export function useGuests() {
+  const { data: weddingDetails, isSuccess } = useWeddingDetails();
+
   return useQuery({
     queryKey: queryKeys.guests,
     queryFn: api.getGuests,
+    enabled: isSuccess && !!weddingDetails,
   });
 }
 
 export function useGroupsWithStats() {
+  const { data: weddingDetails, isSuccess } = useWeddingDetails();
+
   return useQuery<GroupWithStats[]>({
     queryKey: queryKeys.groupsWithStats,
     queryFn: api.getGroupsWithStats,
+    enabled: isSuccess && !!weddingDetails,
   });
 }
 
 export function useCollaborators() {
+  const { data: weddingDetails, isSuccess } = useWeddingDetails();
+
   return useQuery<Collaborator[]>({
     queryKey: queryKeys.collaborators,
     queryFn: api.getCollaborators,
+    enabled: isSuccess && !!weddingDetails,
   });
 }
 

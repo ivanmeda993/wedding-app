@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { WeddingSetupForm } from './wedding-setup-form';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Heart } from "lucide-react";
+import { WeddingSetupForm } from "./wedding-setup-form";
 
 export function WeddingSetup() {
   return (

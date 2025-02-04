@@ -11,12 +11,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useShareWedding, useDeleteCollaborator } from "../../hooks/mutations";
+import { Check, Copy, Loader2, Trash2 } from "lucide-react";
+import { useWeddingDetails, useCollaborators } from "../../hooks/queries";
+import { useDeleteCollaborator } from "../../hooks/mutations";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Check, Copy, Mail, UserX } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useCollaborators, useWeddingDetails } from "../../hooks/queries";
-import { supabase } from "../../../../lib/supabase";
 
 export function ShareWeddingDialog({
   open,
@@ -25,54 +23,12 @@ export function ShareWeddingDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const [email, setEmail] = useState("");
   const [copied, setCopied] = useState(false);
-  const shareWedding = useShareWedding();
-  const deleteCollaborator = useDeleteCollaborator();
-  const { toast } = useToast();
-  const { data: collaborators = [], isLoading } = useCollaborators();
+  const [error, setError] = useState<string | null>(null);
   const { data: weddingDetails } = useWeddingDetails();
-
-  const handleShare = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (email.trim()) {
-      try {
-        // Add as collaborator first
-        await shareWedding.mutateAsync(
-          { email: email.trim() },
-          {
-            onSuccess: () => {
-              setEmail("");
-            },
-          }
-        );
-
-        // Send magic link
-        const { error: magicLinkError } = await supabase.auth.signInWithOtp({
-          email: email.trim(),
-          options: {
-            emailRedirectTo: `https://weddlist.dev/invite/${weddingDetails?.inviteCode}`,
-          },
-        });
-
-        if (magicLinkError) throw magicLinkError;
-
-        onOpenChange(false);
-        toast({
-          title: "Uspešno deljenje",
-          description: `Pristup je uspešno podeljen sa ${email}. Poslali smo email sa linkom za pristup.`,
-        });
-      } catch (error) {
-        console.error("Error sharing wedding:", error);
-        toast({
-          title: "Greška",
-          description: "Došlo je do greške prilikom deljenja pristupa.",
-          variant: "destructive",
-        });
-      }
-    }
-  };
+  const { data: collaborators = [], isLoading: isLoadingCollaborators } =
+    useCollaborators();
+  const deleteCollaborator = useDeleteCollaborator();
 
   const inviteLink = weddingDetails?.inviteCode
     ? `${window.location.origin}/invite/${weddingDetails.inviteCode}`
@@ -86,15 +42,17 @@ export function ShareWeddingDialog({
     }
   };
 
-  const handleDeleteCollaborator = (id: string, email: string) => {
-    deleteCollaborator.mutate(id, {
-      onSuccess: () => {
-        toast({
-          title: "Uspešno brisanje",
-          description: `Pristup je uspešno ukinut za ${email}`,
-        });
-      },
-    });
+  const handleDeleteCollaborator = async (email: string) => {
+    try {
+      setError(null);
+      await deleteCollaborator.mutateAsync(email);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Došlo je do greške pri brisanju kolaboratora."
+      );
+    }
   };
 
   return (
@@ -103,41 +61,12 @@ export function ShareWeddingDialog({
         <DialogHeader>
           <DialogTitle>Podeli pristup venčanju</DialogTitle>
           <DialogDescription>
-            Pošalji pozivnicu mladoj ili drugim organizatorima da pristupe
-            evidenciji gostiju.
+            Kopiraj link za pozivnicu i podeli ga sa mladom ili drugim
+            organizatorima.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleShare} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email adresa</Label>
-            <div className="flex gap-2">
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="email@example.com"
-                className="flex-1"
-              />
-              <Button type="submit" disabled={shareWedding.isPending}>
-                <Mail className="w-4 h-4 mr-2" />
-                Pošalji
-              </Button>
-            </div>
-          </div>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Ili
-              </span>
-            </div>
-          </div>
-
+        <div className="space-y-6">
           <div className="space-y-2">
             <Label>Link za pozivnicu</Label>
             <div className="flex gap-2">
@@ -163,62 +92,54 @@ export function ShareWeddingDialog({
             </div>
           </div>
 
-          {shareWedding.isError && (
-            <Alert variant="destructive">
-              <AlertDescription>
-                Došlo je do greške prilikom deljenja pristupa.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Lista kolaboratora */}
-          <div className="space-y-2 pt-4">
+          <div className="space-y-2">
             <Label>Kolaboratori</Label>
-            {isLoading ? (
-              <div className="text-sm text-muted-foreground">Učitavanje...</div>
+            {isLoadingCollaborators ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              </div>
             ) : collaborators.length === 0 ? (
-              <div className="text-sm text-muted-foreground">
+              <div className="text-sm text-muted-foreground text-center py-4">
                 Još uvek nema kolaboratora
               </div>
             ) : (
               <div className="space-y-2">
                 {collaborators.map((collaborator) => (
                   <div
-                    key={collaborator.id}
-                    className="flex items-center justify-between p-2 rounded-lg border"
+                    key={collaborator.email}
+                    className="flex items-center justify-between gap-2 p-2 rounded-md border"
                   >
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium">
-                        {collaborator.email}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        Dodat{" "}
-                        {new Date(collaborator.created_at).toLocaleDateString(
-                          "sr-RS"
-                        )}
-                      </span>
-                    </div>
+                    <span className="text-sm truncate flex-1">
+                      {collaborator.email}
+                    </span>
                     <Button
                       type="button"
                       variant="ghost"
-                      size="icon"
-                      className="text-destructive hover:text-destructive"
+                      size="sm"
                       onClick={() =>
-                        handleDeleteCollaborator(
-                          collaborator.id,
-                          collaborator.email
-                        )
+                        handleDeleteCollaborator(collaborator.email)
                       }
                       disabled={deleteCollaborator.isPending}
+                      className="text-destructive hover:text-destructive"
                     >
-                      <UserX className="w-4 h-4" />
+                      {deleteCollaborator.isPending ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
                     </Button>
                   </div>
                 ))}
               </div>
             )}
           </div>
-        </form>
+
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );

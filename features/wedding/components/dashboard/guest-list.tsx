@@ -3,7 +3,7 @@
 import { useGuests } from "../../hooks/queries";
 import { GuestCard } from "./guest-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Side, AttendanceStatus, Guest } from "../../types";
+import type { Side, Attendance, Guest } from "../../types";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { useState } from "react";
 import { ChevronDown, Users2 } from "lucide-react";
@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 
 interface GuestListProps {
   selectedSide: Side | "all";
-  selectedStatus: AttendanceStatus | "all";
+  selectedStatus: Attendance | "all";
   searchQuery: string;
 }
 

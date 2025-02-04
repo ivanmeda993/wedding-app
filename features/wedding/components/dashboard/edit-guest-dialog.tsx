@@ -54,16 +54,16 @@ export function EditGuestDialog({
           defaultValues={{
             firstName: guest.firstName,
             lastName: guest.lastName,
-            phone: guest.phone,
+            phone: guest.phone || undefined,
             attendance: guest.attendance,
             side: guest.side,
             groupId: guest.groupId || undefined,
-            notes: guest.notes,
+            notes: guest.notes || undefined,
             gift: guest.gift?.type
               ? {
                   type: guest.gift.type,
-                  amount: guest.gift.amount,
-                  description: guest.gift.description,
+                  amount: guest.gift.amount || undefined,
+                  description: guest.gift.description || undefined,
                 }
               : undefined,
             companions: guest.companions.map((companion) => ({

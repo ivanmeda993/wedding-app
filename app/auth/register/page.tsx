@@ -83,87 +83,109 @@ export default function RegisterPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {success && (
-            <Alert className="mb-4" variant="default">
-              <AlertDescription>{success}</AlertDescription>
-            </Alert>
-          )}
-
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email adresa</FormLabel>
-                    <FormControl>
-                      <Input placeholder="vasa@email.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Lozinka</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="••••••" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Potvrdite lozinku</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="••••••" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-
+          {success ? (
+            <div className="space-y-4">
+              <Alert className="mb-4" variant="default">
+                <AlertDescription>{success}</AlertDescription>
+              </Alert>
               <Button
-                type="submit"
+                variant="outline"
                 className="w-full"
-                disabled={form.formState.isSubmitting}
+                onClick={() => router.push("/auth/login")}
               >
-                {form.formState.isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Registracija...
-                  </>
-                ) : (
-                  "Registruj se"
-                )}
+                Nazad na prijavu
               </Button>
-            </form>
-          </Form>
+            </div>
+          ) : (
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email adresa</FormLabel>
+                      <FormControl>
+                        <Input placeholder="vasa@email.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Lozinka</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="••••••"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Potvrdite lozinku</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="••••••"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={form.formState.isSubmitting}
+                >
+                  {form.formState.isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Registracija...
+                    </>
+                  ) : (
+                    "Registruj se"
+                  )}
+                </Button>
+              </form>
+            </Form>
+          )}
         </CardContent>
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-muted-foreground">
-            Već imate nalog?{" "}
-            <Link href="/auth/login" className="text-primary hover:underline">
-              Prijavite se
-            </Link>
-          </p>
-        </CardFooter>
+        {!success && (
+          <CardFooter className="flex justify-center">
+            <p className="text-sm text-muted-foreground">
+              Već imate nalog?{" "}
+              <Link href="/auth/login" className="text-primary hover:underline">
+                Prijavite se
+              </Link>
+            </p>
+          </CardFooter>
+        )}
       </Card>
     </div>
   );

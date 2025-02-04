@@ -4,7 +4,7 @@ import { useGroupsWithStats, useGuests } from "../../hooks/queries";
 import { GuestCard } from "./guest-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UsersRound, ChevronDown } from "lucide-react";
-import type { Side, AttendanceStatus, Guest } from "../../types";
+import type { Side, Attendance, Guest } from "../../types";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -13,7 +13,7 @@ import { GroupActions } from "./group-actions";
 
 interface GuestGroupsProps {
   selectedSide: Side | "all";
-  selectedStatus: AttendanceStatus | "all";
+  selectedStatus: Attendance | "all";
   searchQuery: string;
 }
 

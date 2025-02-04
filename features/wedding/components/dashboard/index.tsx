@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { useFilterStore } from "../../stores/filter-store";
-import type { Side, AttendanceStatus } from "../../types";
+import type { Side, Attendance } from "../../types";
 
 /**
  * Wedding Dashboard Component
@@ -113,7 +113,7 @@ export function Dashboard() {
 
             <Select
               value={selectedStatus}
-              onValueChange={(value: AttendanceStatus | "all") =>
+              onValueChange={(value: Attendance | "all") =>
                 setSelectedStatus(value)
               }
             >

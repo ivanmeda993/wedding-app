@@ -55,7 +55,7 @@ export default function SetPasswordPage() {
 
       if (error) throw error;
 
-      router.push("/dashboard");
+      router.push("/");
     } catch (err) {
       console.error("Error setting password:", err);
       setError("Došlo je do greške pri postavljanju lozinke.");

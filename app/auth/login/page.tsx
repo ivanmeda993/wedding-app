@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import * as z from 'zod';
-import { Button } from '@/components/ui/button';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -13,17 +13,24 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Heart, Loader2 } from 'lucide-react';
-import { useAuth } from '@/features/auth/hooks/use-auth';
-import Link from 'next/link';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
+import { Heart, Loader2 } from "lucide-react";
+import { useAuth } from "@/features/auth/hooks/use-auth";
+import Link from "next/link";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { supabase } from "@/lib/supabase";
 
 const loginSchema = z.object({
-  email: z.string().email('Unesite validnu email adresu'),
-  password: z.string().min(6, 'Lozinka mora imati najmanje 6 karaktera'),
+  email: z.string().email("Unesite validnu email adresu"),
+  password: z.string().min(6, "Lozinka mora imati najmanje 6 karaktera"),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -36,8 +43,8 @@ export default function LoginPage() {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     },
   });
 
@@ -45,12 +52,42 @@ export default function LoginPage() {
     try {
       setError(null);
       await signIn(values);
-      router.push('/');
+
+      // Check if user has a wedding
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session?.user) return;
+
+      // First check if user is a wedding owner
+      const { data: ownedWedding } = await supabase
+        .from("weddings")
+        .select("id")
+        .eq("user_id", session.session.user.id)
+        .maybeSingle();
+
+      if (ownedWedding) {
+        router.push("/");
+        return;
+      }
+
+      // Then check if user is a collaborator
+      const { data: collaborator } = await supabase
+        .from("wedding_collaborators")
+        .select("wedding_id")
+        .eq("email", session.session.user.email)
+        .maybeSingle();
+
+      if (collaborator) {
+        router.push("/");
+        return;
+      }
+
+      // If no wedding found, redirect to setup
+      router.push("/setup");
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('Neispravni podaci za prijavu');
+        setError("Došlo je do greške prilikom prijave");
       }
     }
   };
@@ -61,7 +98,7 @@ export default function LoginPage() {
         <CardHeader>
           <CardTitle className="text-center flex items-center justify-center gap-2">
             <Heart className="text-pink-500" />
-            Evidencija gostiju za venčanje
+            Prijava
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -101,14 +138,18 @@ export default function LoginPage() {
                 </Alert>
               )}
 
-              <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={form.formState.isSubmitting}
+              >
                 {form.formState.isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Prijavljivanje...
+                    Prijava...
                   </>
                 ) : (
-                  'Prijavi se'
+                  "Prijavi se"
                 )}
               </Button>
             </form>
@@ -116,8 +157,11 @@ export default function LoginPage() {
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground">
-            Nemate nalog?{' '}
-            <Link href="/auth/register" className="text-primary hover:underline">
+            Nemate nalog?{" "}
+            <Link
+              href="/auth/register"
+              className="text-primary hover:underline"
+            >
               Registrujte se
             </Link>
           </p>
