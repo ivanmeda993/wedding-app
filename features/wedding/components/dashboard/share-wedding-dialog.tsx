@@ -48,24 +48,20 @@ export function ShareWeddingDialog({
           }
         );
 
-        // Create user and send confirmation email
-        const { error: signUpError } = await supabase.auth.signUp({
+        // Send magic link
+        const { error: magicLinkError } = await supabase.auth.signInWithOtp({
           email: email.trim(),
-          password: crypto.randomUUID(), // Random temporary password
           options: {
-            emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/set-password`,
-            data: {
-              redirect_to: `${process.env.NEXT_PUBLIC_SITE_URL}/set-password`,
-            },
+            emailRedirectTo: `https://weddlist.dev/invite/${weddingDetails?.inviteCode}`,
           },
         });
 
-        if (signUpError) throw signUpError;
+        if (magicLinkError) throw magicLinkError;
 
         onOpenChange(false);
         toast({
           title: "Uspešno deljenje",
-          description: `Pristup je uspešno podeljen sa ${email}. Poslali smo email za potvrdu naloga.`,
+          description: `Pristup je uspešno podeljen sa ${email}. Poslali smo email sa linkom za pristup.`,
         });
       } catch (error) {
         console.error("Error sharing wedding:", error);

@@ -20,16 +20,9 @@ export default function InvitePage({ params }: { params: { code: string } }) {
         const code = searchParams.get("code");
         if (code) {
           // Exchange code for session
-          const { data, error: authError } =
+          const { error: authError } =
             await supabase.auth.exchangeCodeForSession(code);
           if (authError) throw authError;
-
-          // Check if we have a redirect URL in user metadata
-          const redirectTo = data.user?.user_metadata?.redirect_to;
-          if (redirectTo) {
-            router.push(redirectTo);
-            return;
-          }
         }
 
         // Get wedding details using RPC function
@@ -51,40 +44,28 @@ export default function InvitePage({ params }: { params: { code: string } }) {
         const {
           data: { session },
         } = await supabase.auth.getSession();
-
-        if (session?.user) {
-          // Add as collaborator if not already
-          const { error: collaboratorError } = await supabase
-            .from("wedding_collaborators")
-            .insert({
-              wedding_id: wedding.id,
-              email: session.user.email,
-            })
-            .select()
-            .single();
-
-          if (collaboratorError && collaboratorError.code !== "23505") {
-            // Ignore unique violation
-            throw collaboratorError;
-          }
-
-          // Check if user has password set
-          const { data: user, error: userError } =
-            await supabase.auth.getUser();
-          if (userError) throw userError;
-
-          // If user doesn't have a password set, redirect to password setup
-          if (!user.user?.user_metadata?.has_password) {
-            router.push("/set-password");
-            return;
-          }
-
-          // Redirect to dashboard
-          router.push("/dashboard");
+        if (!session?.user) {
+          setLoading(false);
           return;
         }
 
-        setLoading(false);
+        // Add as collaborator if not already
+        const { error: collaboratorError } = await supabase
+          .from("wedding_collaborators")
+          .insert({
+            wedding_id: wedding.id,
+            email: session.user.email,
+          })
+          .select()
+          .single();
+
+        if (collaboratorError && collaboratorError.code !== "23505") {
+          // Ignore unique violation
+          throw collaboratorError;
+        }
+
+        // Redirect to set password page
+        router.push("/set-password");
       } catch (err) {
         console.error("Error handling auth:", err);
         setError("Došlo je do greške pri autentikaciji.");
