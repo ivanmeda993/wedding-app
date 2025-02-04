@@ -112,7 +112,7 @@ export function GuestForm({
   // Reset groupId when side changes
   useEffect(() => {
     form.setValue("groupId", undefined);
-  }, [selectedSide, form]);
+  }, [form]);
 
   const filteredGroups = groups.filter((group) => group.side === selectedSide);
 
@@ -134,7 +134,7 @@ export function GuestForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
         <div className="grid grid-cols-2 gap-3">
           <FormField
             control={form.control}

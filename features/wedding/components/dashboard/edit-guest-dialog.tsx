@@ -48,7 +48,7 @@ export function EditGuestDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Izmena gosta</DialogTitle>
+          <DialogTitle className="text-2xl font-bold">Izmena gosta</DialogTitle>
         </DialogHeader>
         <GuestForm
           defaultValues={{

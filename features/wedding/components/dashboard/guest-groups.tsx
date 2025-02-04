@@ -3,13 +3,15 @@
 import { useGroupsWithStats, useGuests } from "../../hooks/queries";
 import { GuestCard } from "./guest-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UsersRound, ChevronDown } from "lucide-react";
+import { UsersRound, ChevronDown, Plus, UserPlus } from "lucide-react";
 import type { Side, Attendance, Guest } from "../../types";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { GroupActions } from "./group-actions";
+import { AddGuestDialog } from "./add-guest-dialog";
+import { AddGroupDialog } from "./add-group-dialog";
 
 interface GuestGroupsProps {
   selectedSide: Side | "all";
@@ -43,6 +45,8 @@ export function GuestGroups({
   const { data: groupsWithStats = [] } = useGroupsWithStats();
   const { data: guests = [] } = useGuests();
   const [openGroups, setOpenGroups] = useState<string[]>([]);
+  const [isNewGuestOpen, setIsNewGuestOpen] = useState(false);
+  const [isNewGroupOpen, setIsNewGroupOpen] = useState(false);
 
   const toggleGroup = (groupId: string) => {
     setOpenGroups((current) =>
@@ -91,8 +95,10 @@ export function GuestGroups({
     if (groups.length === 0) return null;
 
     return (
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">{title}</h2>
+      <div className="space-y-2">
+        <h2 className="text-xl md:text-3xl font-semibold text-violet-800">
+          {title}
+        </h2>
         <div className="space-y-4">
           {groups.map((group) => {
             const groupGuests = filterGuests(
@@ -120,9 +126,11 @@ export function GuestGroups({
                       <div className="flex md:items-center justify-between">
                         <div className="flex items-center gap-1 md:gap-2">
                           <CardTitle className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
-                            <div className="flex items-center gap-1 text-sm md:text-md">
-                              <UsersRound className="w-5 h-5" />
-                              {group.name}
+                            <div className="flex items-center gap-1 text-sm md:text-lg font-semibold text-purple-800">
+                              <UsersRound className="w-5 h-5 " />
+                              <span className="  bg-clip-text text-transparent">
+                                {group.name}
+                              </span>
                             </div>
                             <span className="text-sm font-normal text-muted-foreground">
                               (
@@ -185,8 +193,8 @@ export function GuestGroups({
           onClick={expandAll}
           className="gap-2"
         >
-          <ChevronDown className="h-4 w-4" />
-          Proširi sve grupe
+          <ChevronDown className="h-4 w-4 text-violet-500" />
+          <span>Proširi sve grupe</span>
         </Button>
         <Button
           variant="outline"
@@ -194,16 +202,42 @@ export function GuestGroups({
           onClick={collapseAll}
           className="gap-2"
         >
-          <ChevronDown className="h-4 w-4 rotate-180" />
-          Skupi sve grupe
+          <ChevronDown className="h-4 w-4 rotate-180 text-violet-500" />
+          <span>Skupi sve grupe</span>
         </Button>
       </div>
+
+      <div className="space-y-2">
+        {/* Nova grupa dugme */}
+        <Button
+          variant="outline"
+          className="w-full border-dashed border-violet-500/50 hover:border-violet-500 hover:bg-violet-50 dark:hover:bg-violet-950"
+          onClick={() => setIsNewGroupOpen(true)}
+        >
+          <Plus className="h-4 w-4 text-violet-500" />
+          Nova grupa
+        </Button>
+
+        {/* Novi gost dugme */}
+        <Button
+          className="w-full bg-violet-500 text-white hover:bg-violet-600"
+          onClick={() => setIsNewGuestOpen(true)}
+        >
+          <UserPlus className="h-4 w-4" />
+          Novi gost
+        </Button>
+      </div>
+
       {selectedSide !== "groom" && (
         <GroupSection groups={brideGroups} title="Mladina strana" />
       )}
       {selectedSide !== "bride" && (
         <GroupSection groups={groomGroups} title="Mladoženjina strana" />
       )}
+
+      <AddGuestDialog open={isNewGuestOpen} onOpenChange={setIsNewGuestOpen} />
+
+      <AddGroupDialog open={isNewGroupOpen} onOpenChange={setIsNewGroupOpen} />
     </div>
   );
 }

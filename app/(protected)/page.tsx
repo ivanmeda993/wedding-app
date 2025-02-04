@@ -45,5 +45,5 @@ export default function DashboardPage() {
     return <Dashboard />;
   }
 
-  return <div>Something went wrong</div>;
+  return null;
 }

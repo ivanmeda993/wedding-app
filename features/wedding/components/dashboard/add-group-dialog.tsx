@@ -1,13 +1,24 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAddGroup } from '../../hooks/mutations';
-import type { Side } from '../../types';
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useAddGroup } from "../../hooks/mutations";
+import type { Side } from "../../types";
 
 export function AddGroupDialog({
   open,
@@ -16,8 +27,8 @@ export function AddGroupDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const [groupName, setGroupName] = useState('');
-  const [side, setSide] = useState<Side>('bride');
+  const [groupName, setGroupName] = useState("");
+  const [side, setSide] = useState<Side>("bride");
   const addGroup = useAddGroup();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -27,8 +38,8 @@ export function AddGroupDialog({
         { name: groupName.trim(), side },
         {
           onSuccess: () => {
-            setGroupName('');
-            setSide('bride');
+            setGroupName("");
+            setSide("bride");
             onOpenChange(false);
           },
         }
@@ -42,8 +53,8 @@ export function AddGroupDialog({
         <DialogHeader>
           <DialogTitle>Nova grupa</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
+        <form onSubmit={handleSubmit} className="space-y-2">
+          <div className="space-y-1">
             <Label htmlFor="groupName">Naziv grupe</Label>
             <Input
               id="groupName"
@@ -52,9 +63,12 @@ export function AddGroupDialog({
               placeholder="npr. Porodica, Prijatelji, Posao..."
             />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1">
             <Label htmlFor="side">Strana</Label>
-            <Select value={side} onValueChange={(value: Side) => setSide(value)}>
+            <Select
+              value={side}
+              onValueChange={(value: Side) => setSide(value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Izaberi stranu" />
               </SelectTrigger>
@@ -64,8 +78,12 @@ export function AddGroupDialog({
               </SelectContent>
             </Select>
           </div>
-          <Button type="submit" className="w-full" disabled={addGroup.isPending}>
-            {addGroup.isPending ? 'Dodavanje...' : 'Dodaj grupu'}
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={addGroup.isPending}
+          >
+            {addGroup.isPending ? "Dodavanje..." : "Dodaj grupu"}
           </Button>
         </form>
       </DialogContent>

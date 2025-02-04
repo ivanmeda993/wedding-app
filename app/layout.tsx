@@ -69,14 +69,26 @@ export default function RootLayout({
 }) {
   return (
     <html lang="sr" suppressHydrationWarning>
-      <body className={inter.className} suppressHydrationWarning>
-        <Providers>
-          <AuthProvider>
-            {children}
-            <Analytics />
-            <Toaster />
-          </AuthProvider>
-        </Providers>
+      <body className={`${inter.className} relative`} suppressHydrationWarning>
+        {/* Fancy gradient background */}
+        <div className="fixed inset-0 bg-gradient-to-br from-pink-100 via-white to-violet-100" />
+
+        {/* Decorative elements */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-[40%] -left-[20%] w-[70%] h-[70%] rounded-full bg-gradient-to-br from-pink-200/40 to-violet-300/40 blur-3xl" />
+          <div className="absolute -bottom-[40%] -right-[20%] w-[70%] h-[70%] rounded-full bg-gradient-to-br from-violet-200/40 to-pink-300/40 blur-3xl" />
+        </div>
+
+        {/* Content */}
+        <div className="relative">
+          <Providers>
+            <AuthProvider>
+              {children}
+              <Analytics />
+              <Toaster />
+            </AuthProvider>
+          </Providers>
+        </div>
       </body>
     </html>
   );

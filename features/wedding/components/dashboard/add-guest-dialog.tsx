@@ -39,7 +39,7 @@ export function AddGuestDialog({ open, onOpenChange }: AddGuestDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Novi gost</DialogTitle>
+          <DialogTitle className="text-2xl font-bold">Novi gost</DialogTitle>
         </DialogHeader>
         <GuestForm
           onSubmit={onSubmit}
