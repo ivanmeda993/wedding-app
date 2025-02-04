@@ -49,6 +49,12 @@ export function GuestList({
   const brideGuests = ungroupedGuests.filter((guest) => guest.side === "bride");
   const groomGuests = ungroupedGuests.filter((guest) => guest.side === "groom");
 
+  // Calculate total guests
+  const totalGuests = ungroupedGuests.reduce(
+    (acc, guest) => acc + 1 + guest.companions.length,
+    0
+  );
+
   // If there are no ungrouped guests, return null
   if (ungroupedGuests.length === 0) {
     return null;
@@ -71,26 +77,18 @@ export function GuestList({
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Users2 className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Users2 className="w-4 h-4 sm:w-5 sm:h-5 text-violet-500" />
               <CardTitle className="flex items-center gap-2 text-sm sm:text-lg">
                 Ostali gosti
-                {(() => {
-                  const totalGuests = ungroupedGuests.reduce(
-                    (acc, guest) => acc + 1 + guest.companions.length,
-                    0
-                  );
-                  return (
-                    <span className="text-xs sm:text-sm font-normal text-muted-foreground">
-                      ({totalGuests}{" "}
-                      {totalGuests === 1
-                        ? "gost"
-                        : totalGuests < 5
-                        ? "gosta"
-                        : "gostiju"}
-                      )
-                    </span>
-                  );
-                })()}
+                <span className="text-xs sm:text-sm font-normal text-violet-500/70">
+                  ({totalGuests}{" "}
+                  {totalGuests === 1
+                    ? "gost"
+                    : totalGuests < 5
+                    ? "gosta"
+                    : "gostiju"}
+                  )
+                </span>
               </CardTitle>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">

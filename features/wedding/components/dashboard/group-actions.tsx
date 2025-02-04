@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Edit2, Trash2 } from 'lucide-react';
-import { useDeleteGroup } from '../../hooks/mutations';
-import { EditGroupDialog } from './edit-group-dialog';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Edit2, Trash2 } from "lucide-react";
+import { useDeleteGroup } from "../../hooks/mutations";
+import { EditGroupDialog } from "./edit-group-dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,8 +14,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import type { Group } from '../../types';
+} from "@/components/ui/alert-dialog";
+import type { Group } from "../../types";
 
 export function GroupActions({ group }: { group: Group }) {
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -27,7 +27,7 @@ export function GroupActions({ group }: { group: Group }) {
       await deleteGroup.mutateAsync(group.id);
       setIsDeleteOpen(false);
     } catch (error) {
-      console.error('Error deleting group:', error);
+      console.error("Error deleting group:", error);
     }
   };
 
@@ -43,7 +43,7 @@ export function GroupActions({ group }: { group: Group }) {
 
   return (
     <>
-      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+      <div className="flex items-center gap-2">
         <Button
           variant="ghost"
           size="icon"
@@ -73,8 +73,8 @@ export function GroupActions({ group }: { group: Group }) {
           <AlertDialogHeader>
             <AlertDialogTitle>Brisanje grupe</AlertDialogTitle>
             <AlertDialogDescription>
-              Da li ste sigurni da želite da obrišete grupu "{group.name}"?
-              Svi gosti iz ove grupe će biti prebačeni u "Ostali gosti".
+              Da li ste sigurni da želite da obrišete grupu "{group.name}"? Svi
+              gosti iz ove grupe će biti prebačeni u "Ostali gosti".
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -83,7 +83,7 @@ export function GroupActions({ group }: { group: Group }) {
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleteGroup.isPending ? 'Brisanje...' : 'Obriši'}
+              {deleteGroup.isPending ? "Brisanje..." : "Obriši"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

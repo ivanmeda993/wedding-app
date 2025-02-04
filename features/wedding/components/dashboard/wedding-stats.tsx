@@ -27,18 +27,18 @@ function StatCard({
       )}
     >
       <div className="flex items-center gap-4">
-        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-violet-500/10 flex items-center justify-center flex-shrink-0">
           {icon}
         </div>
         <div>
-          <p className="text-xs sm:text-sm font-medium text-muted-foreground">
+          <p className="text-xs sm:text-sm font-medium text-violet-500/70">
             {title}
           </p>
-          <p className="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+          <p className="text-xl sm:text-2xl font-bold tracking-tight text-violet-800">
             {value}
           </p>
           {description && (
-            <p className="text-xs text-muted-foreground mt-1">{description}</p>
+            <p className="text-xs text-violet-500/70 mt-1">{description}</p>
           )}
         </div>
       </div>

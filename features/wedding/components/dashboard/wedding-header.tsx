@@ -67,7 +67,7 @@ export function WeddingHeader() {
   return (
     <div className="space-y-4 sm:space-y-6">
       <Card className="overflow-hidden">
-        <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-4">
+        <div className="bg-gradient-to-r from-violet-500/10 via-violet-500/5 to-transparent p-4">
           {/* Mobile Action Buttons */}
           <div className="grid grid-cols-4 gap-2 mb-4 sm:hidden">
             <Button
@@ -76,7 +76,7 @@ export function WeddingHeader() {
               onClick={() => setIsEditOpen(true)}
               className="w-full"
             >
-              <Settings className="w-4 h-4" />
+              <Settings className="w-4 h-4 text-violet-500" />
             </Button>
             <Button
               variant="outline"
@@ -84,11 +84,11 @@ export function WeddingHeader() {
               onClick={() => setIsShareOpen(true)}
               className="w-full"
             >
-              <Share2 className="w-4 h-4" />
+              <Share2 className="w-4 h-4 text-violet-500" />
             </Button>
             <Button variant="outline" size="sm" asChild className="w-full">
               <Link href="/gifts">
-                <Gift className="w-4 h-4" />
+                <Gift className="w-4 h-4 text-violet-500" />
               </Link>
             </Button>
             <Button
@@ -107,28 +107,28 @@ export function WeddingHeader() {
               variant="outline"
               size="sm"
               onClick={() => setIsEditOpen(true)}
-              className="hover:bg-primary/5"
+              className="hover:bg-violet-50"
             >
-              <Settings className="w-4 h-4 mr-2" />
+              <Settings className="w-4 h-4 mr-2 text-violet-500" />
               Izmeni podatke
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setIsShareOpen(true)}
-              className="hover:bg-primary/5"
+              className="hover:bg-violet-50"
             >
-              <Share2 className="w-4 h-4 mr-2" />
+              <Share2 className="w-4 h-4 mr-2 text-violet-500" />
               Podeli pristup
             </Button>
             <Button
               variant="outline"
               size="sm"
               asChild
-              className="hover:bg-primary/5"
+              className="hover:bg-violet-50"
             >
               <Link href="/gifts" className="flex items-center gap-2">
-                <Gift className="w-4 h-4" />
+                <Gift className="w-4 h-4 text-violet-500" />
                 Pregled poklona
               </Link>
             </Button>
@@ -144,12 +144,12 @@ export function WeddingHeader() {
           </div>
 
           <div className="text-center space-y-3">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-violet-800">
               {weddingDetails.brideName} & {weddingDetails.groomName}
             </h1>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-muted-foreground text-sm">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-violet-500/70 text-sm">
               <div className="flex items-center gap-2">
-                <CalendarDays className="w-4 h-4" />
+                <CalendarDays className="w-4 h-4 text-violet-500" />
                 <time className="font-medium">
                   {new Date(weddingDetails.date).toLocaleDateString("sr-RS", {
                     day: "numeric",
@@ -160,9 +160,9 @@ export function WeddingHeader() {
               </div>
               {weddingDetails.venue.name && (
                 <>
-                  <span className="hidden sm:inline">•</span>
+                  <span className="hidden sm:inline text-violet-500/70">•</span>
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
+                    <MapPin className="w-4 h-4 text-violet-500" />
                     <span className="font-medium">
                       {weddingDetails.venue.name}
                     </span>
@@ -171,9 +171,9 @@ export function WeddingHeader() {
               )}
               {weddingDetails.venue.hall && (
                 <>
-                  <span className="hidden sm:inline">•</span>
+                  <span className="hidden sm:inline text-violet-500/70">•</span>
                   <div className="flex items-center gap-2">
-                    <Building2 className="w-4 h-4" />
+                    <Building2 className="w-4 h-4 text-violet-500" />
                     <span className="font-medium">
                       {weddingDetails.venue.hall}
                     </span>

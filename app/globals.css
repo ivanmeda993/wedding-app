@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  span {
+    @apply text-violet-500/70;
+  }
+
+  p {
+    @apply text-violet-500/70;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply bg-gradient-to-r from-violet-500 to-purple-500 bg-clip-text text-transparent;
+  }
+}
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
@@ -171,4 +190,21 @@
 
 .phone-input-dropdown .no-entries-message {
   @apply text-muted-foreground;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-10px);
+  }
+  75% {
+    transform: translateX(10px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
 }

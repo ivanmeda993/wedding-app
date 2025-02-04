@@ -69,8 +69,7 @@ export function Dashboard() {
             size="sm"
           >
             <Users2 className="w-4 h-4" />
-            <span className="hidden sm:inline">Svi gosti</span>
-            <span className="sm:hidden">Svi</span>
+            Svi
           </Button>
           <Button
             variant={viewMode === "groups" ? "default" : "outline"}
@@ -79,8 +78,7 @@ export function Dashboard() {
             size="sm"
           >
             <UsersRound className="w-4 h-4" />
-            <span className="hidden sm:inline">Grupe</span>
-            <span className="sm:hidden">Grupe</span>
+            Grupe
           </Button>
           <Button
             variant={viewMode === "ungrouped" ? "default" : "outline"}
@@ -89,8 +87,7 @@ export function Dashboard() {
             size="sm"
           >
             <Users2 className="w-4 h-4" />
-            <span className="hidden sm:inline">Ostali gosti</span>
-            <span className="sm:hidden">Ostali</span>
+            Ostali gosti
           </Button>
         </div>
 
@@ -136,13 +133,11 @@ export function Dashboard() {
               size="sm"
             >
               <PlusCircle className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Nova grupa</span>
-              <span className="sm:hidden">Grupa</span>
+              Nova grupa
             </Button>
             <Button onClick={() => setIsAddGuestOpen(true)} size="sm">
               <UserPlus className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Novi gost</span>
-              <span className="sm:hidden">Gost</span>
+              Novi gost
             </Button>
           </div>
 
