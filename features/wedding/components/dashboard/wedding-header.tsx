@@ -15,9 +15,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useAuth } from "@/features/auth/hooks/use-auth";
-import { ShareWeddingDialog } from "./share-wedding-dialog";
-import { EditWeddingDialog } from "./edit-wedding-dialog";
-import { useState } from "react";
+import { useModalStore } from "./modals/modal-store";
 
 /**
  * Wedding Header Component
@@ -47,8 +45,8 @@ function LoadingSkeleton() {
 export function WeddingHeader() {
   const { data: weddingDetails, isLoading, isError } = useWeddingDetails();
   const { signOut } = useAuth();
-  const [isShareOpen, setIsShareOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
+  const onOpenChange = useModalStore((state) => state.onOpenChange);
+  const setWedding = useModalStore((state) => state.setWedding);
 
   if (isLoading) {
     return <LoadingSkeleton />;
@@ -73,7 +71,10 @@ export function WeddingHeader() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIsEditOpen(true)}
+              onClick={() => {
+                setWedding(weddingDetails);
+                onOpenChange("editWedding");
+              }}
               className="w-full"
             >
               <Settings className="w-4 h-4 text-violet-500" />
@@ -81,7 +82,10 @@ export function WeddingHeader() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIsShareOpen(true)}
+              onClick={() => {
+                setWedding(weddingDetails);
+                onOpenChange("shareWedding");
+              }}
               className="w-full"
             >
               <Share2 className="w-4 h-4 text-violet-500" />
@@ -106,7 +110,10 @@ export function WeddingHeader() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIsEditOpen(true)}
+              onClick={() => {
+                setWedding(weddingDetails);
+                onOpenChange("editWedding");
+              }}
               className="hover:bg-violet-50"
             >
               <Settings className="w-4 h-4 mr-2 text-violet-500" />
@@ -115,7 +122,10 @@ export function WeddingHeader() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIsShareOpen(true)}
+              onClick={() => {
+                setWedding(weddingDetails);
+                onOpenChange("shareWedding");
+              }}
               className="hover:bg-violet-50"
             >
               <Share2 className="w-4 h-4 mr-2 text-violet-500" />
@@ -186,12 +196,6 @@ export function WeddingHeader() {
       </Card>
 
       <WeddingStats />
-      <ShareWeddingDialog open={isShareOpen} onOpenChange={setIsShareOpen} />
-      <EditWeddingDialog
-        wedding={weddingDetails}
-        open={isEditOpen}
-        onOpenChange={setIsEditOpen}
-      />
     </div>
   );
 }
