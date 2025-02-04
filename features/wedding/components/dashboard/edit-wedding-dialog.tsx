@@ -1,9 +1,14 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
@@ -12,13 +17,13 @@ import {
   FormLabel,
   FormMessage,
   FormDescription,
-} from '@/components/ui/form';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { weddingSetupSchema } from '../../schemas';
-import { useUpdateWedding } from '../../hooks/mutations';
-import type { WeddingDetails } from '../../types';
+} from "@/components/ui/form";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { weddingSetupSchema } from "../../schemas";
+import { useUpdateWedding } from "../../hooks/mutations";
+import type { WeddingDetails } from "../../types";
 
 export function EditWeddingDialog({
   wedding,
@@ -47,13 +52,18 @@ export function EditWeddingDialog({
     },
   });
 
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   const onSubmit = async (values: any) => {
     try {
       setError(null);
       await updateWedding.mutateAsync(values);
       onOpenChange(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Došlo je do greške pri ažuriranju podataka');
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Došlo je do greške pri ažuriranju podataka"
+      );
     }
   };
 
@@ -73,7 +83,11 @@ export function EditWeddingDialog({
                   <FormItem>
                     <FormLabel>Ime mlade</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ana" {...field} className="bg-background/50" />
+                      <Input
+                        placeholder="Ana"
+                        {...field}
+                        className="bg-background/50"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -86,7 +100,11 @@ export function EditWeddingDialog({
                   <FormItem>
                     <FormLabel>Ime mladoženje</FormLabel>
                     <FormControl>
-                      <Input placeholder="Marko" {...field} className="bg-background/50" />
+                      <Input
+                        placeholder="Marko"
+                        {...field}
+                        className="bg-background/50"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -104,10 +122,15 @@ export function EditWeddingDialog({
                     <FormItem>
                       <FormLabel>Naziv lokacije</FormLabel>
                       <FormControl>
-                        <Input placeholder="Hotel Grand" {...field} className="bg-background/50" />
+                        <Input
+                          placeholder="Hotel Grand"
+                          {...field}
+                          className="bg-background/50"
+                        />
                       </FormControl>
                       <FormDescription>
-                        Unesite naziv hotela ili restorana gde će se održati venčanje
+                        Unesite naziv hotela ili restorana gde će se održati
+                        venčanje
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -121,7 +144,11 @@ export function EditWeddingDialog({
                     <FormItem>
                       <FormLabel>Adresa</FormLabel>
                       <FormControl>
-                        <Input placeholder="Bulevar oslobođenja 1" {...field} className="bg-background/50" />
+                        <Input
+                          placeholder="Bulevar oslobođenja 1"
+                          {...field}
+                          className="bg-background/50"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -135,7 +162,11 @@ export function EditWeddingDialog({
                     <FormItem>
                       <FormLabel>Sala/Restoran</FormLabel>
                       <FormControl>
-                        <Input placeholder="Kristalna dvorana" {...field} className="bg-background/50" />
+                        <Input
+                          placeholder="Kristalna dvorana"
+                          {...field}
+                          className="bg-background/50"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -152,7 +183,11 @@ export function EditWeddingDialog({
                   <FormItem>
                     <FormLabel>Datum venčanja</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} className="bg-background/50" />
+                      <Input
+                        type="date"
+                        {...field}
+                        className="bg-background/50"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -166,10 +201,10 @@ export function EditWeddingDialog({
                   <FormItem>
                     <FormLabel>Cena po osobi (EUR)</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="50" 
-                        {...field} 
+                      <Input
+                        type="number"
+                        placeholder="50"
+                        {...field}
                         className="bg-background/50"
                       />
                     </FormControl>
@@ -188,12 +223,12 @@ export function EditWeddingDialog({
               </Alert>
             )}
 
-            <Button 
-              type="submit" 
-              className="w-full" 
+            <Button
+              type="submit"
+              className="w-full"
               disabled={updateWedding.isPending}
             >
-              {updateWedding.isPending ? 'Čuvanje...' : 'Sačuvaj izmene'}
+              {updateWedding.isPending ? "Čuvanje..." : "Sačuvaj izmene"}
             </Button>
           </form>
         </Form>

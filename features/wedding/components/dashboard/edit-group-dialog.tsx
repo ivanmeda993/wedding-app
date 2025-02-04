@@ -1,9 +1,14 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
@@ -11,18 +16,25 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { useUpdateGroup } from '../../hooks/mutations';
-import type { Group } from '../../types';
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useUpdateGroup } from "../../hooks/mutations";
+import type { Group } from "../../types";
+import { Loader2 } from "lucide-react";
 
 const groupSchema = z.object({
-  name: z.string().min(2, 'Naziv grupe mora imati bar 2 karaktera'),
-  side: z.enum(['bride', 'groom']),
+  name: z.string().min(2, "Naziv grupe mora imati bar 2 karaktera"),
+  side: z.enum(["bride", "groom"]),
 });
 
 type GroupFormValues = z.infer<typeof groupSchema>;
@@ -50,21 +62,44 @@ export function EditGroupDialog({
   const onSubmit = async (values: GroupFormValues) => {
     try {
       setError(null);
-      await updateGroup.mutateAsync({ id: group.id, updates: values });
-      onOpenChange(false);
+      await updateGroup.mutateAsync(
+        { id: group.id, updates: values },
+        {
+          onSuccess: () => {
+            onOpenChange(false);
+            form.reset();
+          },
+        }
+      );
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Došlo je do greške pri ažuriranju grupe');
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Došlo je do greške pri ažuriranju grupe"
+      );
     }
+  };
+
+  const stopPropagation = (e: React.SyntheticEvent) => {
+    e.stopPropagation();
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Izmena grupe</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form
+            onSubmit={(e) => {
+              stopPropagation(e);
+              form.handleSubmit(onSubmit)(e);
+            }}
+            className="space-y-4"
+            onClick={stopPropagation}
+            onKeyDown={stopPropagation}
+          >
             <FormField
               control={form.control}
               name="name"
@@ -72,7 +107,12 @@ export function EditGroupDialog({
                 <FormItem>
                   <FormLabel>Naziv grupe</FormLabel>
                   <FormControl>
-                    <Input placeholder="npr. Porodica, Prijatelji, Posao..." {...field} />
+                    <Input
+                      placeholder="npr. Porodica, Prijatelji, Posao..."
+                      {...field}
+                      onClick={stopPropagation}
+                      onKeyDown={stopPropagation}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -85,9 +125,15 @@ export function EditGroupDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Strana</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger
+                        onClick={stopPropagation}
+                        onKeyDown={stopPropagation}
+                      >
                         <SelectValue placeholder="Izaberi stranu" />
                       </SelectTrigger>
                     </FormControl>
@@ -107,8 +153,21 @@ export function EditGroupDialog({
               </Alert>
             )}
 
-            <Button type="submit" className="w-full" disabled={updateGroup.isPending}>
-              {updateGroup.isPending ? 'Čuvanje...' : 'Sačuvaj izmene'}
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={updateGroup.isPending}
+              onClick={stopPropagation}
+              onKeyDown={stopPropagation}
+            >
+              {updateGroup.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Čuvanje...
+                </>
+              ) : (
+                "Sačuvaj izmene"
+              )}
             </Button>
           </form>
         </Form>

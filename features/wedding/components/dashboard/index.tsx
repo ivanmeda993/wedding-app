@@ -2,9 +2,7 @@
 
 import { GuestGroups } from "./guest-groups";
 import { GuestList } from "./guest-list";
-import { AddGroupDialog } from "./add-group-dialog";
-import { AddGuestDialog } from "./add-guest-dialog";
-import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { PlusCircle, UserPlus, Users2, UsersRound, Search } from "lucide-react";
 import {
@@ -17,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useFilterStore } from "../../stores/filter-store";
 import type { Side, Attendance } from "../../types";
+import { useModalStore } from "./modals/modal-store";
 
 /**
  * Wedding Dashboard Component
@@ -43,8 +42,7 @@ import type { Side, Attendance } from "../../types";
  */
 
 export function Dashboard() {
-  const [isAddGroupOpen, setIsAddGroupOpen] = useState(false);
-  const [isAddGuestOpen, setIsAddGuestOpen] = useState(false);
+  const onOpenChange = useModalStore((state) => state.onOpenChange);
 
   const {
     viewMode,
@@ -128,14 +126,14 @@ export function Dashboard() {
 
           <div className="grid grid-cols-2 gap-2">
             <Button
-              onClick={() => setIsAddGroupOpen(true)}
+              onClick={() => onOpenChange("addGroup")}
               variant="outline"
               size="sm"
             >
               <PlusCircle className="w-4 h-4 mr-2" />
               Nova grupa
             </Button>
-            <Button onClick={() => setIsAddGuestOpen(true)} size="sm">
+            <Button onClick={() => onOpenChange("addGuest")} size="sm">
               <UserPlus className="w-4 h-4 mr-2" />
               Novi gost
             </Button>
@@ -169,9 +167,6 @@ export function Dashboard() {
           />
         )}
       </div>
-
-      <AddGroupDialog open={isAddGroupOpen} onOpenChange={setIsAddGroupOpen} />
-      <AddGuestDialog open={isAddGuestOpen} onOpenChange={setIsAddGuestOpen} />
     </div>
   );
 }
