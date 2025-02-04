@@ -11,6 +11,25 @@
     - Poziva funkciju za kreiranje korisnika
 */
 
+-- Create wedding_collaborators table if it doesn't exist
+CREATE TABLE IF NOT EXISTS wedding_collaborators (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  wedding_id uuid REFERENCES weddings(id) ON DELETE CASCADE,
+  email text NOT NULL,
+  created_at timestamptz DEFAULT now(),
+  UNIQUE(wedding_id, email)
+);
+
+-- Enable RLS
+ALTER TABLE wedding_collaborators ENABLE ROW LEVEL SECURITY;
+
+-- Create policies
+CREATE POLICY "Enable all for authenticated users" ON wedding_collaborators
+  FOR ALL
+  TO authenticated
+  USING (true)
+  WITH CHECK (true);
+
 -- Create function to handle new collaborator
 CREATE OR REPLACE FUNCTION handle_new_collaborator()
 RETURNS trigger

@@ -5,7 +5,39 @@ import type {
   Guest,
   Group,
   GroupWithStats,
+  Collaborator,
+  Companion,
+  Gift,
 } from "../types";
+
+type DBGuest = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  phone: string | null;
+  attendance: Guest["attendance"];
+  side: Guest["side"];
+  group_id: string | null;
+  notes: string | null;
+  companions: Array<{
+    id: string;
+    first_name: string;
+    last_name: string;
+    is_adult: boolean;
+  }>;
+  gifts: Array<{
+    type: Gift["type"];
+    description: string | null;
+    amount: number | null;
+  }>;
+};
+
+type DBGroup = {
+  id: string;
+  name: string;
+  side: Group["side"];
+  guests: DBGuest[];
+};
 
 const supabase = createClientComponentClient();
 
@@ -32,6 +64,15 @@ const api = {
 
     if (error) throw error;
     if (!wedding) throw new Error("Greška pri kreiranju venčanja");
+
+    // Update user metadata with wedding_id
+    const { error: updateError } = await supabase.auth.updateUser({
+      data: { wedding_id: wedding.id },
+    });
+
+    if (updateError) {
+      console.error("Failed to update user metadata:", updateError);
+    }
 
     return {
       id: wedding.id,
@@ -149,7 +190,7 @@ const api = {
 
     if (guestsError) throw guestsError;
 
-    return guests.map((guest) => ({
+    return (guests as DBGuest[]).map((guest) => ({
       id: guest.id,
       firstName: guest.first_name,
       lastName: guest.last_name,
@@ -158,7 +199,7 @@ const api = {
       side: guest.side,
       groupId: guest.group_id,
       notes: guest.notes,
-      companions: guest.companions.map((companion: any) => ({
+      companions: guest.companions.map((companion) => ({
         id: companion.id,
         firstName: companion.first_name,
         lastName: companion.last_name,
@@ -191,12 +232,12 @@ const api = {
 
     if (error) throw error;
 
-    return groups.map((group) => {
+    return (groups as DBGroup[]).map((group) => {
       const guests = group.guests || [];
-      const companions = guests.flatMap((g: any) => g.companions || []);
-      const giftAmount = guests.reduce((acc: number, guest: any) => {
+      const companions = guests.flatMap((g) => g.companions || []);
+      const giftAmount = guests.reduce((acc, guest) => {
         const gift = guest.gifts[0];
-        return acc + (gift?.type === "money" ? gift.amount : 0);
+        return acc + (gift?.type === "money" && gift.amount ? gift.amount : 0);
       }, 0);
 
       return {
@@ -206,8 +247,8 @@ const api = {
         stats: {
           totalGuests: guests.length + companions.length,
           totalAdults:
-            guests.length + companions.filter((c: any) => c.is_adult).length,
-          totalChildren: companions.filter((c: any) => !c.is_adult).length,
+            guests.length + companions.filter((c) => c.is_adult).length,
+          totalChildren: companions.filter((c) => !c.is_adult).length,
           totalGiftAmount: giftAmount,
         },
       };
@@ -258,6 +299,7 @@ const api = {
       if (companionsError) throw companionsError;
     }
 
+    // biome-ignore lint/complexity/useOptionalChain: <explanation>
     if (guest.gift && guest.gift.type) {
       const giftData = {
         type: guest.gift.type,
@@ -317,6 +359,7 @@ const api = {
       await supabase.from("gifts").delete().eq("guest_id", id);
 
       // Add new gift if it has a valid type
+      // biome-ignore lint/complexity/useOptionalChain: <explanation>
       if (updates.gift && updates.gift.type) {
         const giftData = {
           type: updates.gift.type,
@@ -397,40 +440,144 @@ const api = {
     if (error) throw error;
   },
 
-  getCollaborators: async () => {
+  getCollaborators: async (): Promise<Collaborator[]> => {
     const { data: session } = await supabase.auth.getSession();
-    if (!session.session?.user) throw new Error("Korisnik nije prijavljen");
+    if (!session?.session?.user) {
+      // Return empty array if session is not ready yet
+      return [];
+    }
 
-    const { data: wedding } = await supabase
+    // First check if user is the wedding owner
+    const { data: ownedWedding } = await supabase
       .from("weddings")
       .select("id")
       .eq("user_id", session.session.user.id)
-      .single();
+      .maybeSingle();
 
-    if (!wedding) throw new Error("Venčanje nije pronađeno");
+    if (ownedWedding?.id) {
+      const { data: collaborators, error } = await supabase
+        .from("wedding_collaborators")
+        .select("email")
+        .eq("wedding_id", ownedWedding.id);
+
+      if (error) throw error;
+      return collaborators || [];
+    }
+
+    // Then try to get wedding_id from collaborators table
+    const { data: collaborator } = await supabase
+      .from("wedding_collaborators")
+      .select("wedding_id")
+      .eq("email", session.session.user.email)
+      .maybeSingle();
+
+    if (collaborator?.wedding_id) {
+      const { data: collaborators, error } = await supabase
+        .from("wedding_collaborators")
+        .select("email")
+        .eq("wedding_id", collaborator.wedding_id);
+
+      if (error) throw error;
+      return collaborators || [];
+    }
+
+    // Finally try to get wedding_id from metadata
+    const weddingId = session.session.user.user_metadata?.wedding_id;
+    if (!weddingId) return [];
 
     const { data: collaborators, error } = await supabase
       .from("wedding_collaborators")
-      .select("id, email, created_at")
-      .eq("wedding_id", wedding.id)
-      .order("created_at", { ascending: false });
+      .select("email")
+      .eq("wedding_id", weddingId);
 
     if (error) throw error;
-
-    return collaborators.map((c) => ({
-      id: c.id,
-      email: c.email,
-      created_at: c.created_at,
-    }));
+    return collaborators || [];
   },
 
-  deleteCollaborator: async (id: string): Promise<void> => {
+  deleteCollaborator: async (email: string): Promise<void> => {
+    const { data: session } = await supabase.auth.getSession();
+    if (!session?.session?.user) throw new Error("Korisnik nije prijavljen");
+
+    // First check if user is the wedding owner
+    const { data: ownedWedding } = await supabase
+      .from("weddings")
+      .select("id")
+      .eq("user_id", session.session.user.id)
+      .maybeSingle();
+
+    if (ownedWedding?.id) {
+      const { error } = await supabase
+        .from("wedding_collaborators")
+        .delete()
+        .eq("wedding_id", ownedWedding.id)
+        .eq("email", email);
+
+      if (error) throw error;
+
+      // If we're deleting our own collaboration, clear wedding_id from metadata
+      if (email === session.session.user.email) {
+        const { error: updateError } = await supabase.auth.updateUser({
+          data: { wedding_id: null },
+        });
+
+        if (updateError) {
+          console.error("Failed to update user metadata:", updateError);
+        }
+      }
+      return;
+    }
+
+    // Then try to get wedding_id from collaborators table
+    const { data: collaborator } = await supabase
+      .from("wedding_collaborators")
+      .select("wedding_id")
+      .eq("email", session.session.user.email)
+      .maybeSingle();
+
+    if (collaborator?.wedding_id) {
+      const { error } = await supabase
+        .from("wedding_collaborators")
+        .delete()
+        .eq("wedding_id", collaborator.wedding_id)
+        .eq("email", email);
+
+      if (error) throw error;
+
+      // If we're deleting our own collaboration, clear wedding_id from metadata
+      if (email === session.session.user.email) {
+        const { error: updateError } = await supabase.auth.updateUser({
+          data: { wedding_id: null },
+        });
+
+        if (updateError) {
+          console.error("Failed to update user metadata:", updateError);
+        }
+      }
+      return;
+    }
+
+    // Finally try to get wedding_id from metadata
+    const weddingId = session.session.user.user_metadata?.wedding_id;
+    if (!weddingId) throw new Error("Venčanje nije pronađeno");
+
     const { error } = await supabase
       .from("wedding_collaborators")
       .delete()
-      .eq("id", id);
+      .eq("wedding_id", weddingId)
+      .eq("email", email);
 
     if (error) throw error;
+
+    // If we're deleting our own collaboration, clear wedding_id from metadata
+    if (email === session.session.user.email) {
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: { wedding_id: null },
+      });
+
+      if (updateError) {
+        console.error("Failed to update user metadata:", updateError);
+      }
+    }
   },
 };
 

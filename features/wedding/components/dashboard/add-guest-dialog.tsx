@@ -22,7 +22,7 @@ export function AddGuestDialog({ open, onOpenChange }: AddGuestDialogProps) {
       {
         ...values,
         groupId: values.groupId || null,
-        companions: values.companions.map((c, i) => ({
+        companions: values?.companions?.map((c, i) => ({
           ...c,
           id: `temp-${i}`,
         })),

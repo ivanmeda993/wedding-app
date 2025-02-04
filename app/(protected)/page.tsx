@@ -1,25 +1,24 @@
 "use client";
 
 import { useWeddingDetails } from "@/features/wedding/hooks/queries";
-import { WeddingSetup } from "@/features/wedding/components/setup";
 import { Dashboard } from "@/features/wedding/components/dashboard";
 
 /**
  * Protected Dashboard Page
  *
- * Main entry point for authenticated users.
- * Renders the wedding planning dashboard with:
- * - Guest management
- * - Statistics
- * - Group management
+ * Shows wedding details and guest management interface.
+ * Only accessible to authenticated users who are collaborators.
  *
- * Protected route - requires authentication
+ * Features:
+ * - Guest list
+ * - Group management
+ * - Wedding details
+ * - Statistics
  *
  * @page
  */
-
-export default function Home() {
-  const { data: weddingDetails, isLoading } = useWeddingDetails();
+export default function DashboardPage() {
+  const { data: weddingDetails, isLoading, isSuccess } = useWeddingDetails();
 
   if (isLoading) {
     return (
@@ -32,7 +31,19 @@ export default function Home() {
     );
   }
 
-  if (!weddingDetails) return <WeddingSetup />;
+  if (!weddingDetails && isSuccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <p className="text-muted-foreground">Venčanje nije pronađeno.</p>
+        </div>
+      </div>
+    );
+  }
 
-  return <Dashboard />;
+  if (weddingDetails && isSuccess) {
+    return <Dashboard />;
+  }
+
+  return <div>Something went wrong</div>;
 }

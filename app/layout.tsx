@@ -33,9 +33,33 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Evidencija gostiju za venčanje",
+  title: "Evidencija gostiju za venčanje | Organizacija venčanja",
   description:
-    "Premium aplikacija za organizaciju i evidenciju gostiju na venčanju",
+    "Premium aplikacija za organizaciju venčanja i evidenciju gostiju. Jednostavno upravljanje spiskom zvanica, praćenje potvrda dolaska i organizacija rasporeda sedenja.",
+  keywords: [
+    "evidencija gostiju",
+    "organizacija venčanja",
+    "spisak gostiju za venčanje",
+    "upravljanje gostima",
+    "planiranje venčanja",
+    "wedding planning",
+    "raspored sedenja",
+  ],
+  authors: [{ name: "Ivan Milićević" }],
+  creator: "Ivan Milićević",
+  publisher: "Ivan Milićević",
+  openGraph: {
+    title: "Evidencija gostiju za venčanje | Organizacija venčanja",
+    description:
+      "Premium aplikacija za organizaciju venčanja i evidenciju gostiju. Jednostavno upravljanje spiskom zvanica.",
+    type: "website",
+    locale: "sr_RS",
+    siteName: "Evidencija gostiju",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

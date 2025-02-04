@@ -2,14 +2,34 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import { queryKeys } from "./query-keys";
 import type { Guest, Group, Side, WeddingSetupFormData } from "../types";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/features/auth/hooks/use-auth";
 
 export function useSetupWedding() {
   const queryClient = useQueryClient();
-
+  const router = useRouter();
+  const { user } = useAuth();
   return useMutation({
     mutationFn: (data: WeddingSetupFormData) => api.setupWedding(data),
     onSuccess: (data) => {
-      queryClient.setQueryData(queryKeys.weddingDetails, data);
+      console.log("Setup wedding response:", data);
+
+      if (!data) {
+        console.error("No data returned from setupWedding");
+        return;
+      }
+
+      // Set the data immediately
+
+      // Invalidate queries but force an immediate refetch
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.weddingDetails,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["user"],
+      });
+
+      router.push("/dashboard");
     },
   });
 }
@@ -116,7 +136,7 @@ export function useDeleteCollaborator() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: api.deleteCollaborator,
+    mutationFn: (email: string) => api.deleteCollaborator(email),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.collaborators });
     },
